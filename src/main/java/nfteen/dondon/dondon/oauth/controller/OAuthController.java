@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 
-public class MyController {
+public class OAuthController {
 
-    @GetMapping("/my")
+    @GetMapping("/login")
     @ResponseBody
     public String myAPI() {
 
-        return "my route";
+        return "login";
     }
 }
 
