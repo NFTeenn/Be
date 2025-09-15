@@ -1,6 +1,8 @@
 package nfteen.dondon.dondon.oauth.jwt;
 
 import io.jsonwebtoken.Jwts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,7 @@ import java.util.Date;
 public class JWTUtil {
 
     private SecretKey secretKey;
+    private static final Logger log = LoggerFactory.getLogger(JWTUtil.class);
 
     public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
 
@@ -22,7 +25,7 @@ public class JWTUtil {
 
     public String getUsername(String token) {
 
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
     }
 
     public String getRole(String token) {
@@ -35,14 +38,18 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(String email, String role, Long expiredMs) {
 
-        return Jwts.builder()
-                .claim("username", username)
+        String token = Jwts.builder()
+                .claim("email", email)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
+
+        log.info("JWT 발급됨 → email: {}, role: {}, token: {}", email, role, token);
+
+        return token;
     }
 }

@@ -1,13 +1,15 @@
 package nfteen.dondon.dondon.oauth.dto;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
-public class CustomOAuth2User implements OAuth2User {
+public class CustomOAuth2User implements OAuth2User, UserDetails {
 
     private final UserDTO userDTO;
 
@@ -19,24 +21,12 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public Map<String, Object> getAttributes() {
 
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-
-        collection.add(new GrantedAuthority() {
-
-            @Override
-            public String getAuthority() {
-
-                return userDTO.getRole();
-            }
-        });
-
-        return collection;
+        return Collections.singleton(new SimpleGrantedAuthority(userDTO.getRole()));
     }
 
     @Override
@@ -45,8 +35,35 @@ public class CustomOAuth2User implements OAuth2User {
         return userDTO.getName();
     }
 
+    @Override
     public String getUsername() {
 
-        return userDTO.getUsername();
+        return userDTO.getEmail();
     }
+
+    @Override
+    public String getPassword() {
+        return null; // OAuth2에서는 password가 없음
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
 }
