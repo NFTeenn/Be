@@ -24,7 +24,7 @@ public class OAuthController {
             cookie.setHttpOnly(true);
             cookie.setPath("/");
             cookie.setMaxAge(0);
-            cookie.setSecure(false);
+            cookie.setSecure(true);
             
             response.addCookie(cookie);
 
