@@ -23,49 +23,55 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        String token = null;
+        try{
+            String token = extractTokenFromCookie(request);
 
-        // 요청 쿠키에서 access_token 찾기
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("access_token".equals(cookie.getName())
-                        && cookie.getValue() != null
-                        && !cookie.getValue().isEmpty()) {
-                    token = cookie.getValue();
-                    break;
-                }
+            if (token == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (jwtUtil.isExpired(token)) {
+                sendUnauthorized(response, "JWT token is expired");
+                return;
+            }
+
+            
+            String email = jwtUtil.getUsername(token);
+            String role = jwtUtil.getRole(token);
+
+            UserDTO userDTO = new UserDTO();
+            userDTO.setEmail(email);
+            userDTO.setRole(role);
+
+            CustomOAuth2User customUser = new CustomOAuth2User(userDTO);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                    customUser, null, customUser.getAuthorities());
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            filterChain.doFilter(request, response);
+        } catch (Exception e){
+            sendUnauthorized(response, "Invalid JWT token: " + e.getMessage());
+        }
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("access_token".equals(cookie.getName()) && cookie.getValue() != null) {
+                return cookie.getValue();
             }
         }
+        return null;
+    }
 
-        if (token == null) {
-            // 토큰이 없으면 필터 체인 계속 진행
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 토큰 만료 확인
-        if (jwtUtil.isExpired(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 토큰에서 사용자 정보 꺼내기
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(username);
-        userDTO.setRole(role);
-
-        CustomOAuth2User customUser = new CustomOAuth2User(userDTO);
-        Authentication authToken = new UsernamePasswordAuthenticationToken(
-                customUser, null, customUser.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
+    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }
