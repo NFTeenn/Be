@@ -2,7 +2,9 @@ package nfteen.dondon.dondon.oauth.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import nfteen.dondon.dondon.oauth.CustomSuccessHandler;
+import nfteen.dondon.dondon.oauth.service.CustomSuccessHandler;
+import org.springframework.beans.factory.annotation.Value;
+import nfteen.dondon.dondon.oauth.config.handler.OAuth2FailureHandler;
 import nfteen.dondon.dondon.oauth.jwt.JWTFilter;
 import nfteen.dondon.dondon.oauth.jwt.JWTUtil;
 import nfteen.dondon.dondon.oauth.service.CustomOAuth2UserService;
@@ -13,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
@@ -27,7 +28,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
-
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    @Value("${app.frontend.redirect-url:}")
+    private String frontendRedirectUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,16 +38,15 @@ public class SecurityConfig {
         // CORS 설정
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOriginPatterns(List.of("http://localhost:3000")); // 와일드카드 패턴 가능
+            config.setAllowedOriginPatterns(List.of(frontendRedirectUrl));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("*"));
-            config.setExposedHeaders(List.of("Set-Cookie", "Authorization")); // 중복 제거
+            config.setExposedHeaders(List.of("Set-Cookie"));
             config.setMaxAge(3600L);
             return config;
         }));
 
-        // CSRF, FormLogin, HTTP Basic 비활성화
         http.csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
@@ -57,7 +59,7 @@ public class SecurityConfig {
 
         // 경로별 인가
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/auth/logout", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/oauth/logout", "/oauth2/**", "/login/oauth2/**").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -65,10 +67,11 @@ public class SecurityConfig {
         http.oauth2Login(oauth -> oauth
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                 .successHandler(customSuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
         );
 
-        // JWT 필터 등록
-        http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        // JWT 필터 등록 - OAuth2LoginFilter 이전에 실행되도록 설정
+        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter.class);
 
         return http.build();
     }
@@ -81,7 +84,6 @@ public class SecurityConfig {
             try {
                 response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"로그인 정보가 없습니다\"}");
             } catch (IOException e) {
-                //
             }
         };
     }
