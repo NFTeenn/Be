@@ -22,10 +22,10 @@ public class OAuthController {
         try {
             ResponseCookie deleteCookie = ResponseCookie.from("access_token", "")
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
                     .maxAge(0) // 즉시 삭제
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .build();
             response.addHeader("Set-Cookie", deleteCookie.toString());
 
