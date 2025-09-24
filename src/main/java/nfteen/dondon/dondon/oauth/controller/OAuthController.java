@@ -1,9 +1,9 @@
 package nfteen.dondon.dondon.oauth.controller;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,13 +20,14 @@ public class OAuthController {
     @GetMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
         try {
-            Cookie cookie = new Cookie("access_token", null);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(0);
-            cookie.setSecure(true);
-            
-            response.addCookie(cookie);
+            ResponseCookie deleteCookie = ResponseCookie.from("access_token", "")
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(0) // 즉시 삭제
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader("Set-Cookie", deleteCookie.toString());
 
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
