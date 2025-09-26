@@ -25,6 +25,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${app.frontend.redirect-url}")
     private String frontendRedirectUrl;
 
+    @Value("${COOKIE_SECURE}")
+    private boolean cookieSecure;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -42,7 +45,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         ResponseCookie cookie = ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(60 * 60) // 1시간
                 .sameSite("None")
