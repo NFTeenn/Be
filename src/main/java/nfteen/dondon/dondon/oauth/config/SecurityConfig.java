@@ -60,6 +60,7 @@ public class SecurityConfig {
         // 경로별 인가
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/oauth/logout", "/oauth2/**", "/login/oauth2/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .anyRequest().authenticated()
         );
 
