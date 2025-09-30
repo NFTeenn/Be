@@ -53,9 +53,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addHeader("Set-Cookie", cookie.toString());
 
         response.sendRedirect(frontendRedirectUrl);
-
-        // 프론트 리다이렉트
-        response.sendRedirect(frontendRedirectUrl);
     }
 }
 
