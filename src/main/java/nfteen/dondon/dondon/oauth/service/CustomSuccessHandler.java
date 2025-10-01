@@ -52,10 +52,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        response.sendRedirect(frontendRedirectUrl);
-
-        // 프론트 리다이렉트
-        response.sendRedirect(frontendRedirectUrl);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"access_token\":\"" + token + "\"}");
+        response.getWriter().flush();
     }
 }
 
