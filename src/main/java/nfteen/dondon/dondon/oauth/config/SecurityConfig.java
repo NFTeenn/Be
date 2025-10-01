@@ -43,7 +43,7 @@ public class SecurityConfig {
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("*"));
-            config.setExposedHeaders(List.of());
+            config.setExposedHeaders(List.of("Set-Cookie"));
             config.setMaxAge(3600L);
             return config;
         }));

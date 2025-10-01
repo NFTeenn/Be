@@ -47,8 +47,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .maxAge(60 * 60);
 
 
-        ResponseCookie cookie = cookieBuilder.build();
-        response.addHeader("Set-Cookie", cookie.toString());
+        long maxAgeSeconds = 60 * 60; // 1시간
+        String cookieHeader = String.format("access_token=%s; Max-Age=%d; Path=/; HttpOnly",
+                token, maxAgeSeconds);
+        response.addHeader("Set-Cookie", cookieHeader);
 
         response.sendRedirect(frontendRedirectUrl);
 
