@@ -43,13 +43,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String token = jwtUtil.createJwt(username, role, 60 * 60 * 1000L);
 
-        ResponseCookie cookie = ResponseCookie.from("access_token", token)
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from("access_token", token)
                 .httpOnly(true)
-                .secure(cookieSecure)
                 .path("/")
-                .maxAge(60 * 60) // 1시간
-                .sameSite("None")
-                .build();
+                .maxAge(60 * 60);
+
+        if (cookieSecure) {
+            cookieBuilder.secure(true).sameSite("None"); // 배포 환경
+        } else {
+            cookieBuilder.secure(false).sameSite("Lax"); // 로컬 개발 환경
+        }
+
+        ResponseCookie cookie = cookieBuilder.build();
         response.addHeader("Set-Cookie", cookie.toString());
 
         response.setContentType("application/json");
