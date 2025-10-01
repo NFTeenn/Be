@@ -25,8 +25,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${app.frontend.redirect-url}")
     private String frontendRedirectUrl;
 
-    @Value("${COOKIE_SECURE}")
-    private boolean cookieSecure;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -48,11 +46,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .path("/")
                 .maxAge(60 * 60);
 
-        if (cookieSecure) {
-            cookieBuilder.secure(true).sameSite("None");
-        } else {
-            cookieBuilder.secure(false).sameSite("Lax");
-        }
 
         ResponseCookie cookie = cookieBuilder.build();
         response.addHeader("Set-Cookie", cookie.toString());

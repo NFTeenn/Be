@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class SecurityConfig {
         // CORS 설정
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOriginPatterns(List.of(frontendRedirectUrl));
+            config.setAllowedOriginPatterns(List.of(frontendRedirectUrl.replaceAll("/oauth2/callback", "")));
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowCredentials(true);
             config.setAllowedHeaders(List.of("*"));
@@ -70,8 +71,8 @@ public class SecurityConfig {
                 .failureHandler(oAuth2FailureHandler)
         );
 
-        // JWT 필터 등록 - OAuth2LoginFilter 이전에 실행되도록 설정
-        http.addFilterBefore(new JWTFilter(jwtUtil), org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter.class);
+
+        http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
