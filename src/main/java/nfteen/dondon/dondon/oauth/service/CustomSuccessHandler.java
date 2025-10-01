@@ -49,18 +49,16 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .maxAge(60 * 60);
 
         if (cookieSecure) {
-            cookieBuilder.secure(true).sameSite("None"); // 배포 환경
+            cookieBuilder.secure(true).sameSite("None");
         } else {
-            cookieBuilder.secure(false).sameSite("Lax"); // 로컬 개발 환경
+            cookieBuilder.secure(false).sameSite("Lax");
         }
 
         ResponseCookie cookie = cookieBuilder.build();
         response.addHeader("Set-Cookie", cookie.toString());
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"access_token\":\"" + token + "\"}");
-        response.getWriter().flush();
+        response.sendRedirect(frontendRedirectUrl);
+
     }
 }
 
