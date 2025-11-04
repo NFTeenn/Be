@@ -1,36 +1,40 @@
 package nfteen.dondon.dondon.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import nfteen.dondon.dondon.config.RSAKeyGenerator;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
+
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 
 @Component
 public class JWTUtil {
 
-    private SecretKey secretKey;
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
 
-    public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+    public JWTUtil(RSAKeyGenerator rsaKeyGenerator) {
+        this.privateKey = rsaKeyGenerator.getPrivateKey();
+        this.publicKey = rsaKeyGenerator.getPublicKey();
     }
 
-   public boolean validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(publicKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (Exception e) {
             return false;
         }
-   }
+    }
 
     public String createTestToken(String subject) {
         Date now = new Date();
@@ -39,7 +43,15 @@ public class JWTUtil {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .signWith(privateKey, SignatureAlgorithm.RS256)
                 .compact();
+    }
+
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(publicKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
