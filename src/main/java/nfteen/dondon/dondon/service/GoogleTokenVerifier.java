@@ -6,7 +6,6 @@ import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
@@ -22,33 +21,35 @@ public class GoogleTokenVerifier {
     private final String googleJwkUrl;
     private final RemoteJWKSet<SecurityContext> jwkSet;
 
-
-    public GoogleTokenVerifier(@Value("${google.jwk.url}") String googleJwkUrl)  throws Exception{
+    public GoogleTokenVerifier(@Value("${google.jwk.url}") String googleJwkUrl) throws Exception {
         this.googleJwkUrl = googleJwkUrl;
-        DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(10000, 10000);
-        this.jwkSet = new RemoteJWKSet<>(new URL(googleJwkUrl), resourceRetriever);
+        this.jwkSet = new RemoteJWKSet<>(new URL(googleJwkUrl));
     }
 
     public boolean verify(String idToken) {
         try {
-            System.out.println("googleJwkUrl = " + googleJwkUrl);
-            System.out.println("idToken = " + idToken);
+            System.out.println("Google JWK URL: " + googleJwkUrl);
+            System.out.println("ID Token: " + idToken);
+
             ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
 
-            // 구글의 JWK 세트 (공개키 집합)
-            RemoteJWKSet<SecurityContext> jwkSet = new RemoteJWKSet<>(new URL(googleJwkUrl));
             JWSVerificationKeySelector<SecurityContext> keySelector =
                     new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, jwkSet);
-
             jwtProcessor.setJWSKeySelector(keySelector);
 
-            // 토큰 파싱 및 검증
             jwtProcessor.process(SignedJWT.parse(idToken), null);
 
             return true; // 검증 성공
-        } catch (BadJOSEException | JOSEException | ParseException e) {
-            e.printStackTrace();
-            return false; // 검증 실패
+        }  catch (BadJOSEException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Expired JWT")) {
+                System.out.println("[GoogleTokenVerifier] 토큰 만료됨");
+            } else {
+                System.out.println("[GoogleTokenVerifier] JWT 검증 실패: " + e.getMessage());
+            }
+            return false;
+        } catch (JOSEException | ParseException e) {
+            System.out.println("[GoogleTokenVerifier] 토큰 파싱/검증 오류: " + e.getMessage());
+            return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

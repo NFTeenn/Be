@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.service.GoogleTokenVerifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
+@Component
 @RequiredArgsConstructor
 public class GoogleTokenFilter extends OncePerRequestFilter {
 
@@ -23,15 +25,20 @@ public class GoogleTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            if (googleTokenVerifier.verify(token)) {
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken("googleUser", null, Collections.emptyList()));
-                System.out.println("✅ Google ID Token 검증 성공");
-                return;
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            try {
+                var googleUser = googleTokenVerifier.verify(token);
+                if(googleUser) {
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    googleUser, null, List.of()
+                            );
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
+            }catch (Exception e){
+                logger.error("Google Token 검증 실패",e);
             }
         }
         filterChain.doFilter(request, response);

@@ -6,7 +6,6 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.jwt.GoogleTokenFilter;
-import nfteen.dondon.dondon.jwt.JWTFilter;
 import nfteen.dondon.dondon.jwt.JWTUtil;
 import nfteen.dondon.dondon.service.GoogleTokenVerifier;
 import org.springframework.context.annotation.Bean;
@@ -59,10 +58,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(new GoogleTokenFilter(googleTokenVerifier),
-                        UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JWTFilter(jwtUtil),
-                        GoogleTokenFilter.class);
-
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
