@@ -31,6 +31,7 @@ public class GoogleTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(
                         new UsernamePasswordAuthenticationToken("googleUser", null, Collections.emptyList()));
                 System.out.println("✅ Google ID Token 검증 성공");
+                return;
             }
         }
         filterChain.doFilter(request, response);

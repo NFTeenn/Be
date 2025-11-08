@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.source.RemoteJWKSet;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
@@ -19,13 +20,19 @@ import java.text.ParseException;
 public class GoogleTokenVerifier {
 
     private final String googleJwkUrl;
+    private final RemoteJWKSet<SecurityContext> jwkSet;
 
-    public GoogleTokenVerifier(@Value("${google.jwk.url}") String googleJwkUrl) {
+
+    public GoogleTokenVerifier(@Value("${google.jwk.url}") String googleJwkUrl)  throws Exception{
         this.googleJwkUrl = googleJwkUrl;
+        DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(10000, 10000);
+        this.jwkSet = new RemoteJWKSet<>(new URL(googleJwkUrl), resourceRetriever);
     }
 
     public boolean verify(String idToken) {
         try {
+            System.out.println("googleJwkUrl = " + googleJwkUrl);
+            System.out.println("idToken = " + idToken);
             ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
 
             // 구글의 JWK 세트 (공개키 집합)
