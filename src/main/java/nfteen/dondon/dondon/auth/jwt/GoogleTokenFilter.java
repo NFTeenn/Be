@@ -1,11 +1,13 @@
-package nfteen.dondon.dondon.jwt;
+package nfteen.dondon.dondon.auth.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import nfteen.dondon.dondon.service.GoogleTokenVerifier;
+import nfteen.dondon.dondon.auth.entity.GoogleUser;
+import nfteen.dondon.dondon.auth.repository.UserRepository;
+import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,7 @@ import java.util.List;
 public class GoogleTokenFilter extends OncePerRequestFilter {
 
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -26,11 +29,12 @@ public class GoogleTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         String token = request.getHeader("Authorization");
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
             try {
-                var googleUser = googleTokenVerifier.verify(token);
-                if(googleUser) {
+                GoogleUser googleUser = googleTokenVerifier.verify(token);
+                if(googleUser != null) {
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
                                     googleUser, null, List.of()

@@ -1,10 +1,8 @@
-package nfteen.dondon.dondon.jwt;
+package nfteen.dondon.dondon.auth.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.config.RSAKeyGenerator;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +34,18 @@ public class JWTUtil {
         }
     }
 
-    public String createTestToken(String subject) {
+    public String generateAccessToken(String subject) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + 1000 * 60 * 60); // 1시간 유효
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String subject) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + 1000 * 60 * 60); // 1시간 유효
         return Jwts.builder()
@@ -54,4 +63,5 @@ public class JWTUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 }
