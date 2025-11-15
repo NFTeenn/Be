@@ -20,7 +20,11 @@ public class Home {
 
     private int day;
     private int level;
+
+    @Column(name = "quiz_count")
     private int quizCount;
+
+    @Column(name = "create_date")
     private LocalDate createDate;
 
     @Column(columnDefinition = "JSON")
