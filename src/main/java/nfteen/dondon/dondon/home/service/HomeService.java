@@ -52,7 +52,7 @@ public class HomeService {
                 }
             }
 
-            LocalDate createDate = home.getCreate();
+            LocalDate createDate = home.getCreateDate();
             LocalDate today = LocalDate.now();
             int calculatedDay = (int) ChronoUnit.DAYS.between(createDate, today) + 1;
             if (calculatedDay > home.getDay()) {
@@ -77,7 +77,7 @@ public class HomeService {
                     .day(1)
                     .level(0)
                     .quizCount(0)
-                    .create(LocalDate.now())
+                    .createDate(LocalDate.now())
                     .build();
             homeRepository.save(newHome);
 

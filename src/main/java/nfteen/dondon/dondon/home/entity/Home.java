@@ -21,7 +21,7 @@ public class Home {
     private int day;
     private int level;
     private int quizCount;
-    private LocalDate create;
+    private LocalDate createDate;
 
     @Column(columnDefinition = "JSON")
     private String mission;
