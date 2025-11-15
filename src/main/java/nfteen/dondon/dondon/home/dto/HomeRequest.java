@@ -8,5 +8,4 @@ import lombok.Data;
 public class HomeRequest {
     private String token;
     private String email;
-    private int yes;
 }

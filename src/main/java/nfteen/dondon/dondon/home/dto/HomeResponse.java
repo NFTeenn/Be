@@ -13,5 +13,4 @@ public class HomeResponse {
     private int quizCount;
     private String quiz;
     private List<String> a;
-    private String content;
 }
