@@ -25,4 +25,17 @@ public class HomeController {
         }
     }
 
+    @GetMapping("/word")
+    public Object showWord(@RequestBody HomeRequest request) {
+        try {
+            if (request.getToken() == null || request.getToken().isEmpty()) {
+                return "token이 없습니다.";
+            }
+            return homeService.showWords(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "오류 발생";
+        }
+    }
+
 }

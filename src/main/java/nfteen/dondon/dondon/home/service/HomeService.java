@@ -2,6 +2,7 @@ package nfteen.dondon.dondon.home.service;
 
 import nfteen.dondon.dondon.home.dto.HomeRequest;
 import nfteen.dondon.dondon.home.dto.HomeResponse;
+import nfteen.dondon.dondon.home.dto.ShowWordResponse;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
 import nfteen.dondon.dondon.home.entity.Word;
@@ -112,12 +113,22 @@ public class HomeService {
         }
 
         List<Word> allWords = wordRepository.findAll();
-        Collections.shuffle(allWords); // 섞기
+        Collections.shuffle(allWords);
         List<String> words = new ArrayList<>();
         for (int i = 0; i < Math.min(6, allWords.size()); i++) {
             words.add(allWords.get(i).getWord());
         }
 
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words);
+    }
+
+    public ShowWordResponse showWords(Object request) {
+        List<Word> allWords = wordRepository.findAll();
+        Collections.shuffle(allWords);
+        List<String> words = new ArrayList<>();
+        for (int i = 0; i < Math.min(4, allWords.size()); i++) {
+            words.add(allWords.get(i).getWord());
+        }
+        return new ShowWordResponse(words);
     }
 }
