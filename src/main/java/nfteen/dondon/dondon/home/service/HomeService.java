@@ -4,14 +4,17 @@ import nfteen.dondon.dondon.home.dto.HomeRequest;
 import nfteen.dondon.dondon.home.dto.HomeResponse;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
+import nfteen.dondon.dondon.home.entity.Word;
 import nfteen.dondon.dondon.home.repository.HomeRepository;
 import nfteen.dondon.dondon.home.repository.QuizRepository;
+import nfteen.dondon.dondon.home.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -23,6 +26,9 @@ public class HomeService {
 
     @Autowired
     private QuizRepository quizRepository;
+
+    @Autowired
+    private WordRepository wordRepository;
 
     public HomeResponse processHome(HomeRequest request) throws Exception {
         if (request.getToken() == null || request.getToken().isEmpty()) {
@@ -105,6 +111,13 @@ public class HomeService {
             }
         }
 
-        return new HomeResponse(day, level, mission, quizCount, quiz, a);
+        List<Word> allWords = wordRepository.findAll();
+        Collections.shuffle(allWords); // 섞기
+        List<String> words = new ArrayList<>();
+        for (int i = 0; i < Math.min(6, allWords.size()); i++) {
+            words.add(allWords.get(i).getWord());
+        }
+
+        return new HomeResponse(day, level, mission, quizCount, quiz, a, words);
     }
 }
