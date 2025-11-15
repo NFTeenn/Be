@@ -15,30 +15,31 @@ import lombok.NoArgsConstructor;
 @Table(name = "quiz")
 public class Quiz {
 
-    @Column(updatable = false, insertable = false, nullable = false)
-    private int code; // 번호
+    @Id
+    @Column(nullable = false)
+    private int code;
 
-    @Column(updatable = false, insertable = false, nullable = false, length = 50)
-    private String type; // 구분
+    @Column(length = 50, nullable = false)
+    private String type;
 
-    @Column(updatable = false, insertable = false, nullable = false, length = 500)
-    private String quiz; // 문제내용
+    @Column(length = 500, nullable = false)
+    private String quiz;
 
-    @Column(updatable = false, insertable = false, length = 500)
-    private String a1; // 보기1
+    @Column(length = 500)
+    private String a1;
 
-    @Column(updatable = false, insertable = false, length = 500)
-    private String a2; // 보기2
+    @Column(length = 500)
+    private String a2;
 
-    @Column(updatable = false, insertable = false, length = 500)
-    private String a3; // 보기3
+    @Column(length = 500)
+    private String a3;
 
-    @Column(updatable = false, insertable = false, length = 500)
-    private String a4; // 보기4
+    @Column(length = 500)
+    private String a4;
 
-    @Column(updatable = false, insertable = false, length = 10)
-    private String result; // 정답
+    @Column(length = 10)
+    private String result;
 
-    @Column(updatable = false, insertable = false, length = 700)
-    private String content; // 해설
+    @Column(length = 700)
+    private String content;
 }
