@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class HomeService {
@@ -24,7 +26,6 @@ public class HomeService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // resources 폴더 내 CSV 파일 경로
     private final String csvFileName = "quiz.csv";
 
     public HomeResponse processHome(HomeRequest request) throws Exception {
@@ -50,6 +51,14 @@ public class HomeService {
                     if (!"1".equals(mission.get(i))) mission.set(i, "0");
                 }
             }
+
+            LocalDate createDate = home.getCreate();
+            LocalDate today = LocalDate.now();
+            int calculatedDay = (int) ChronoUnit.DAYS.between(createDate, today) + 1;
+            if (calculatedDay > home.getDay()) {
+                home.setDay(calculatedDay);
+            }
+
             home.setMission(objectMapper.writeValueAsString(mission));
             homeRepository.save(home);
 
@@ -65,29 +74,26 @@ public class HomeService {
             Home newHome = Home.builder()
                     .email(request.getEmail())
                     .mission(objectMapper.writeValueAsString(mission))
-                    .day(0)
+                    .day(1)
                     .level(0)
                     .quizCount(0)
+                    .create(LocalDate.now())
                     .build();
             homeRepository.save(newHome);
 
-            day = 0;
+            day = 1;
             level = 0;
             quizCount = 0;
         }
 
-        // resources 폴더에서 CSV 읽기
         List<String[]> csvData = new ArrayList<>();
         ClassPathResource resource = new ClassPathResource(csvFileName);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream(), "UTF-8"))) {
             String line;
             boolean firstLine = true;
             while ((line = br.readLine()) != null) {
-                if (firstLine) {
-                    firstLine = false;
-                    continue;
-                }
-                String[] values = line.split(","); // 콤마 구분
+                if (firstLine) { firstLine = false; continue; }
+                String[] values = line.split(",");
                 csvData.add(values);
             }
         }

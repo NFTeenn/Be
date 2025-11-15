@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -19,6 +21,7 @@ public class Home {
     private int day;
     private int level;
     private int quizCount;
+    private LocalDate create;
 
     @Column(columnDefinition = "JSON")
     private String mission;
