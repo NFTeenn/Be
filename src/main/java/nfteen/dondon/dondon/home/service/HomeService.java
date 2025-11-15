@@ -99,11 +99,11 @@ public class HomeService {
         }
 
         Random rand = new Random();
-        String quiz = "";
+        String quiz = null;
         List<String> a = null;
-        String content = "";
+        String content = null;
 
-        if (!csvData.isEmpty()) {
+        if (quizCount < 5 && !csvData.isEmpty()) {
             String[] selected = csvData.get(rand.nextInt(csvData.size()));
 
             quiz = selected[2];
