@@ -47,11 +47,8 @@ public class HomeService {
             } else {
                 mission = new ArrayList<>(List.of(home.getMission().replace("[","")
                         .replace("]","").replace("\"","").split(",")));
-                while (mission.size() < 4) mission.add("0");
+
                 mission.set(0, "1");
-                for (int i = 1; i < mission.size(); i++) {
-                    if (!"1".equals(mission.get(i))) mission.set(i, "0");
-                }
             }
 
             LocalDate createDate = home.getCreateDate();
@@ -141,7 +138,6 @@ public class HomeService {
             List<String> mission = new ArrayList<>(List.of(home.getMission()
                     .replace("[", "").replace("]", "").replace("\"", "").split(",")));
 
-            while (mission.size() < 4) mission.add("0");
             mission.set(1, "1");
             home.setMission(mission.toString());
             homeRepository.save(home);
