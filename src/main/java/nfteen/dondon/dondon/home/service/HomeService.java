@@ -158,13 +158,6 @@ public class HomeService {
                 }
             }
         } else{
-            for (String s : home.getMission()
-                    .replace("[", "")
-                    .replace("]", "")
-                    .replace("\"", "")
-                    .split(",")) {
-                mission.add(s.trim());
-            }
             mission.set(1, "1");
             home.setMission(mission.toString());
             homeRepository.save(home);
