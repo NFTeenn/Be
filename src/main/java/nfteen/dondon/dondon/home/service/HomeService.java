@@ -36,18 +36,21 @@ public class HomeService {
 
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
 
-        List<String> mission;
+        List<String> mission = new ArrayList<>();
         int day, level, quizCount;
 
         if (home != null) {
             if (home.getMission() == null || home.getMission().isEmpty()) {
-                mission = new ArrayList<>();
                 mission.add("1");
                 for (int i = 1; i < 4; i++) mission.add("0");
             } else {
-                mission = new ArrayList<>(List.of(home.getMission().replace("[","")
-                        .replace("]","").replace("\"","").split(",")));
-
+                for (String s : home.getMission()
+                        .replace("[", "")
+                        .replace("]", "")
+                        .replace("\"", "")
+                        .split(",")) {
+                    mission.add(s.trim());
+                }
                 mission.set(0, "1");
             }
 
@@ -163,9 +166,14 @@ public class HomeService {
 
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         if (home != null) {
-            List<String> mission = new ArrayList<>(List.of(home.getMission()
-                    .replace("[", "").replace("]", "").replace("\"", "").split(",")));
-
+            List<String> mission = new ArrayList<>();
+            for (String s : home.getMission()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "")
+                    .split(",")) {
+                mission.add(s.trim());
+            }
             mission.set(1, "1");
             home.setMission(mission.toString());
             homeRepository.save(home);
