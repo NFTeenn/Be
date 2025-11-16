@@ -1,6 +1,7 @@
 package nfteen.dondon.dondon.home.controller;
 
 import nfteen.dondon.dondon.home.dto.HomeRequest;
+import nfteen.dondon.dondon.home.dto.SearchWordRequest;
 import nfteen.dondon.dondon.home.service.HomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,19 @@ public class HomeController {
                 return "token이 없습니다.";
             }
             return homeService.showWords(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "오류 발생";
+        }
+    }
+
+    @PostMapping("/word/search")
+    public Object searchWord(@RequestBody SearchWordRequest request) {
+        try {
+            if (request.getToken() == null || request.getToken().isEmpty()) {
+                return "token이 없습니다.";
+            }
+            return homeService.searchWords(request);
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";

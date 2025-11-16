@@ -1,8 +1,6 @@
 package nfteen.dondon.dondon.home.service;
 
-import nfteen.dondon.dondon.home.dto.HomeRequest;
-import nfteen.dondon.dondon.home.dto.HomeResponse;
-import nfteen.dondon.dondon.home.dto.ShowWordResponse;
+import nfteen.dondon.dondon.home.dto.*;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
 import nfteen.dondon.dondon.home.entity.Word;
@@ -131,4 +129,16 @@ public class HomeService {
         }
         return new ShowWordResponse(words);
     }
+
+    public List<SearchWordResponse> searchWords(SearchWordRequest request) {
+        String search = request.getSearch();
+        if (search == null || search.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Word> words = wordRepository.findByWordContainingIgnoreCase(search);
+        return words.stream()
+                .map(word -> new SearchWordResponse(word.getWord(), word.getDescription(), word.getSubject()))
+                .toList();
+    }
+
 }
