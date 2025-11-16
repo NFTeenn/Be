@@ -57,6 +57,9 @@ public class HomeService {
             if (calculatedDay > home.getDay()) {
                 home.setDay(calculatedDay);
             }
+            if(request.isYes()){
+                home.setQuizCount(home.getQuizCount() + 1);
+            }
 
             home.setMission(mission.toString());
             homeRepository.save(home);
