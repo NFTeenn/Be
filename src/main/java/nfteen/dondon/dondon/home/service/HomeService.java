@@ -135,6 +135,17 @@ public class HomeService {
         if (search == null || search.isEmpty()) {
             return new ArrayList<>();
         }
+
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        if (home != null) {
+            List<String> mission = new ArrayList<>(List.of(home.getMission()
+                    .replace("[", "").replace("]", "").replace("\"", "").split(",")));
+
+            while (mission.size() < 4) mission.add("0");
+            mission.set(1, "1");
+            home.setMission(mission.toString());
+            homeRepository.save(home);
+        }
         List<Word> words = wordRepository.findByWordContainingIgnoreCase(search);
         return words.stream()
                 .map(word -> new SearchWordResponse(word.getWord(), word.getDescription(), word.getSubject()))
