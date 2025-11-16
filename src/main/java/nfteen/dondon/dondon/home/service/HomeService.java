@@ -90,6 +90,9 @@ public class HomeService {
 
         String quiz = null;
         List<String> a = null;
+        int result = 0;
+        String content = null;
+
         if (quizCount < 5) {
             List<Quiz> quizzes = quizRepository.findAll();
             if (!quizzes.isEmpty()) {
@@ -97,15 +100,38 @@ public class HomeService {
                 Quiz selected = quizzes.get(rand.nextInt(quizzes.size()));
 
                 quiz = selected.getQuiz();
+                content = selected.getContent();
 
+                String rawResult = selected.getResult();
                 if ("객관식퀴즈".equals(selected.getType())) {
                     a = new ArrayList<>();
                     a.add(selected.getA1());
                     a.add(selected.getA2());
                     a.add(selected.getA3());
                     a.add(selected.getA4());
-                } else if ("OX퀴즈".equals(selected.getType())) {
+
+                    if (rawResult != null && rawResult.contains("번")) {
+                        try {
+                            result = Integer.parseInt(
+                                    rawResult.replace("번", "").trim()
+                            );
+                        } catch (Exception e) {
+                            result = -1;
+                        }
+                    }
+                }
+                else if ("OX퀴즈".equals(selected.getType())) {
                     a = null;
+                    if (rawResult != null) {
+
+                        if (rawResult.contains("(O)")) {
+                            result = 0; // O → 0
+                        } else if (rawResult.contains("(X)")) {
+                            result = 6; // X → 6
+                        } else {
+                            result = -1;
+                        }
+                    }
                 }
             }
         }
@@ -116,8 +142,7 @@ public class HomeService {
         for (int i = 0; i < Math.min(6, allWords.size()); i++) {
             words.add(allWords.get(i).getWord());
         }
-
-        return new HomeResponse(day, level, mission, quizCount, quiz, a, words);
+        return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
     public ShowWordResponse showWords(Object request) {
