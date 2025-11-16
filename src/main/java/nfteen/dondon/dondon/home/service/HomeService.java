@@ -29,6 +29,25 @@ public class HomeService {
     @Autowired
     private WordRepository wordRepository;
 
+    private void updateDailyStatus(Home home) {
+        if (home == null) return;
+
+        LocalDate today = LocalDate.now();
+        LocalDate createDate = home.getCreateDate();
+        int calculatedDay = (int) ChronoUnit.DAYS.between(createDate, today) + 1;
+
+        if (calculatedDay > home.getDay()) {
+            home.setDay(calculatedDay);
+
+            List<String> mission = new ArrayList<>();
+            for (int i = 0; i < 4; i++) mission.add("0");
+            home.setMission(mission.toString());
+            home.setQuizCount(0);
+
+            homeRepository.save(home);
+        }
+    }
+
     public HomeResponse processHome(HomeRequest request) throws Exception {
         if (request.getToken() == null || request.getToken().isEmpty()) {
             return null;
@@ -40,6 +59,7 @@ public class HomeService {
         int day, level, quizCount;
 
         if (home != null) {
+            updateDailyStatus(home);
             if (home.getMission() == null || home.getMission().isEmpty()) {
                 mission.add("1");
                 for (int i = 1; i < 4; i++) mission.add("0");
@@ -148,7 +168,9 @@ public class HomeService {
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
-    public ShowWordResponse showWords(Object request) {
+    public ShowWordResponse showWords(HomeRequest request) {
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        updateDailyStatus(home);
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
         List<String> words = new ArrayList<>();
@@ -159,12 +181,14 @@ public class HomeService {
     }
 
     public List<SearchWordResponse> searchWords(SearchWordRequest request) {
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        updateDailyStatus(home);
+
         String search = request.getSearch();
         if (search == null || search.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Home home = homeRepository.findById(request.getEmail()).orElse(null);
         if (home != null) {
             List<String> mission = new ArrayList<>();
             for (String s : home.getMission()
