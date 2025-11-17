@@ -71,7 +71,10 @@ public class HomeService {
                         .split(",")) {
                     mission.add(s.trim());
                 }
-                mission.set(0, "1");
+                if ("0".equals(mission.get(0))) {
+                    mission.set(0, "1");
+                    home.setLevel(home.getLevel() + 1);
+                }
             }
 
             LocalDate createDate = home.getCreateDate();
@@ -100,7 +103,7 @@ public class HomeService {
                     .email(request.getEmail())
                     .mission(mission.toString())
                     .day(1)
-                    .level(0)
+                    .level(1)
                     .quizCount(0)
                     .createDate(LocalDate.now())
                     .build();
@@ -158,7 +161,10 @@ public class HomeService {
                 }
             }
         } else{
-            mission.set(1, "1");
+            if ("0".equals(mission.get(1))) {
+                mission.set(1, "1");
+                home.setLevel(home.getLevel() + 1);
+            }
             home.setMission(mission.toString());
             homeRepository.save(home);
         }
@@ -202,7 +208,10 @@ public class HomeService {
                     .split(",")) {
                 mission.add(s.trim());
             }
-            mission.set(2, "1");
+            if ("0".equals(mission.get(2))) {
+                mission.set(2, "1");
+                home.setLevel(home.getLevel() + 1);
+            }
             home.setMission(mission.toString());
             homeRepository.save(home);
         }
@@ -227,8 +236,10 @@ public class HomeService {
                 mission.add(s.trim());
             }
         }
-        mission.set(3, "1");
-
+        if ("0".equals(mission.get(3))) {
+            mission.set(3, "1");
+            home.setLevel(home.getLevel() + 1);
+        }
         home.setMission(mission.toString());
         homeRepository.save(home);
         return 1;
