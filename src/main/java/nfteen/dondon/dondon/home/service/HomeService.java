@@ -212,4 +212,26 @@ public class HomeService {
                 .toList();
     }
 
+    public int showNews(HomeRequest request) {
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        updateDailyStatus(home);
+        List<String> mission = new ArrayList<>();
+        if (home.getMission() == null || home.getMission().isEmpty()) {
+            for (int i = 0; i < 4; i++) mission.add("0");
+        } else {
+            for (String s : home.getMission()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "")
+                    .split(",")) {
+                mission.add(s.trim());
+            }
+        }
+        mission.set(3, "1");
+
+        home.setMission(mission.toString());
+        homeRepository.save(home);
+        return 1;
+    }
+
 }

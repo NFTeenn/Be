@@ -52,4 +52,17 @@ public class HomeController {
         }
     }
 
+    @PostMapping("/news")
+    public Object showNews(@RequestBody HomeRequest request) {
+        try {
+            if (request.getToken() == null || request.getToken().isEmpty()) {
+                return "token이 없습니다.";
+            }
+            return homeService.showNews(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "오류 발생";
+        }
+    }
+
 }
