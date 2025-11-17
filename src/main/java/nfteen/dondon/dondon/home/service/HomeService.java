@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,15 +31,12 @@ public class HomeService {
     private WordRepository wordRepository;
 
     private void updateDailyStatus(Home home) {
-        if (home == null) return;
-
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         LocalDate createDate = home.getCreateDate();
-        int calculatedDay = (int) ChronoUnit.DAYS.between(createDate, today) + 1;
+        int calculatedDay = (int)ChronoUnit.DAYS.between(createDate, today) + 1;
 
         if (calculatedDay > home.getDay()) {
             home.setDay(calculatedDay);
-
             List<String> mission = new ArrayList<>();
             for (int i = 0; i < 4; i++) mission.add("0");
             home.setMission(mission.toString());
@@ -54,35 +52,23 @@ public class HomeService {
         }
 
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
-
         List<String> mission = new ArrayList<>();
         int day, level, quizCount;
 
         if (home != null) {
             updateDailyStatus(home);
-            if (home.getMission() == null || home.getMission().isEmpty()) {
-                mission.add("1");
-                for (int i = 1; i < 4; i++) mission.add("0");
-            } else {
-                for (String s : home.getMission()
-                        .replace("[", "")
-                        .replace("]", "")
-                        .replace("\"", "")
-                        .split(",")) {
-                    mission.add(s.trim());
-                }
-                if ("0".equals(mission.get(0))) {
-                    mission.set(0, "1");
-                    home.setLevel(home.getLevel() + 1);
-                }
+            for (String s : home.getMission()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "")
+                    .split(",")) {
+                mission.add(s.trim());
+            }
+            if ("0".equals(mission.get(0))) {
+                mission.set(0, "1");
+                home.setLevel(home.getLevel() + 1);
             }
 
-            LocalDate createDate = home.getCreateDate();
-            LocalDate today = LocalDate.now();
-            int calculatedDay = (int) ChronoUnit.DAYS.between(createDate, today) + 1;
-            if (calculatedDay > home.getDay()) {
-                home.setDay(calculatedDay);
-            }
             if(request.isYes()){
                 home.setQuizCount(home.getQuizCount() + 1);
             }
@@ -105,7 +91,7 @@ public class HomeService {
                     .day(1)
                     .level(1)
                     .quizCount(0)
-                    .createDate(LocalDate.now())
+                    .createDate(LocalDate.now(ZoneId.of("Asia/Seoul")))
                     .build();
             homeRepository.save(newHome);
 
