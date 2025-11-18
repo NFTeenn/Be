@@ -153,6 +153,7 @@ public class HomeService {
             }
             home.setMission(mission.toString());
             homeRepository.save(home);
+            level = home.getLevel();
         }
 
         List<Word> allWords = wordRepository.findAll();
