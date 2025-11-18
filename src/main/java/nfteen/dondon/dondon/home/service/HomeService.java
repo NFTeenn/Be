@@ -69,7 +69,7 @@ public class HomeService {
                 home.setLevel(home.getLevel() + 1);
             }
 
-            if(request.isYes()){
+            if(request.isSolve()){
                 home.setQuizCount(home.getQuizCount() + 1);
             }
 

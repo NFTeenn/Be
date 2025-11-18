@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class HomeRequest {
+public class BasicRequest {
     private String token;
     private String email;
-    private boolean solve;
 }
