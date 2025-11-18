@@ -1,5 +1,6 @@
 package nfteen.dondon.dondon.home.controller;
 
+import nfteen.dondon.dondon.home.dto.BasicRequest;
 import nfteen.dondon.dondon.home.dto.HomeRequest;
 import nfteen.dondon.dondon.home.dto.SearchWordRequest;
 import nfteen.dondon.dondon.home.service.HomeService;
@@ -27,7 +28,7 @@ public class HomeController {
     }
 
     @GetMapping("/word")
-    public Object showWord(@RequestBody HomeRequest request) {
+    public Object showWord(@RequestBody BasicRequest request) {
         try {
             if (request.getToken() == null || request.getToken().isEmpty()) {
                 return "token이 없습니다.";
@@ -53,7 +54,7 @@ public class HomeController {
     }
 
     @PostMapping("/news")
-    public Object showNews(@RequestBody HomeRequest request) {
+    public Object showNews(@RequestBody BasicRequest request) {
         try {
             if (request.getToken() == null || request.getToken().isEmpty()) {
                 return "token이 없습니다.";

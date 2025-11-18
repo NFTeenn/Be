@@ -165,7 +165,7 @@ public class HomeService {
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
-    public ShowWordResponse showWords(HomeRequest request) {
+    public ShowWordResponse showWords(BasicRequest request) {
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         updateDailyStatus(home);
         List<Word> allWords = wordRepository.findAll();
@@ -208,7 +208,7 @@ public class HomeService {
                 .toList();
     }
 
-    public int showNews(HomeRequest request) {
+    public int showNews(BasicRequest request) {
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         updateDailyStatus(home);
         List<String> mission = new ArrayList<>();
