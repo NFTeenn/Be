@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Table(name = "my_dondon")
-public class MyDondon {
+public class DondonInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +27,7 @@ public class MyDondon {
     private String nickname;
     private int level;
     private LocalDate enterDate;
-    private LocalDate graduation_date;
+    private LocalDate graduationDate;
 
     private int style;
 
