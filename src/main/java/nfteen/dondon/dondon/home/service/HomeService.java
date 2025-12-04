@@ -166,7 +166,8 @@ public class HomeService {
     }
 
     public ShowWordResponse showWords(String email) {
-        Home home = homeRepository.findById(email).orElse(null);
+        Home home = homeRepository.findById(email)
+                .orElseGet(()->homeRepository.save(Home.builder().email(email).build()));
         updateDailyStatus(home);
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
