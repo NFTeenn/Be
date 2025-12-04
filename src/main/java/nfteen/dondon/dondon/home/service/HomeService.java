@@ -166,9 +166,19 @@ public class HomeService {
     }
 
     public ShowWordResponse showWords(String email) {
+
         Home home = homeRepository.findById(email)
-                .orElseGet(()->homeRepository.save(Home.builder().email(email).build()));
+                .orElseGet(()->{
+                    Home newHome = Home.builder()
+                            .email(email)
+                            .createDate(LocalDate.now(ZoneId.of("Asia/Seoul"))).build();
+                    return homeRepository.save(newHome);
+                });
+        if(home == null) {
+            throw new IllegalStateException("Home 생성 실패 : email =" + email);
+        }
         updateDailyStatus(home);
+
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
         List<String> words = new ArrayList<>();
