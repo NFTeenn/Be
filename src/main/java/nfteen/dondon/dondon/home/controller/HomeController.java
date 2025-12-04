@@ -1,5 +1,8 @@
 package nfteen.dondon.dondon.home.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import nfteen.dondon.dondon.auth.entity.GoogleUser;
+import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import nfteen.dondon.dondon.home.dto.BasicRequest;
 import nfteen.dondon.dondon.home.dto.HomeRequest;
 import nfteen.dondon.dondon.home.dto.SearchWordRequest;
@@ -13,6 +16,8 @@ public class HomeController {
 
     @Autowired
     private HomeService homeService;
+    @Autowired
+    private GoogleTokenVerifier googleTokenVerifier;
 
     @PostMapping
     public Object handleHome(@RequestBody HomeRequest request) {
@@ -28,12 +33,20 @@ public class HomeController {
     }
 
     @GetMapping("/word")
-    public Object showWord(@RequestBody BasicRequest request) {
+    public Object showWord(HttpServletRequest request) {
         try {
-            if (request.getToken() == null || request.getToken().isEmpty()) {
+            String auth = request.getHeader("Authorization");
+            if (auth == null || !auth.startsWith("Bearer ")) {
                 return "token이 없습니다.";
             }
-            return homeService.showWords(request);
+
+            String idToken = auth.substring(7);
+            GoogleUser user = googleTokenVerifier.verify(idToken);
+            if(user == null) {
+                return "토큰 검증 실패";
+            }
+
+            return homeService.showWords(user.getEmail());
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";

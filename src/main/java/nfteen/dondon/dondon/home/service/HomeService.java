@@ -165,8 +165,8 @@ public class HomeService {
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
-    public ShowWordResponse showWords(BasicRequest request) {
-        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+    public ShowWordResponse showWords(String email) {
+        Home home = homeRepository.findById(email).orElse(null);
         updateDailyStatus(home);
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
