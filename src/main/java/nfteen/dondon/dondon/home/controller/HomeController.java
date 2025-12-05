@@ -54,12 +54,19 @@ public class HomeController {
     }
 
     @PostMapping("/word/search")
-    public Object searchWord(@RequestBody SearchWordRequest request) {
+    public Object searchWord(HttpServletRequest request, @RequestBody SearchWordRequest body) {
         try {
-            if (request.getToken() == null || request.getToken().isEmpty()) {
+            String auth = request.getHeader("Authorization");
+            if (auth == null || !auth.startsWith("Bearer ")) {
                 return "token이 없습니다.";
             }
-            return homeService.searchWords(request);
+            String idToken = auth.substring(7);
+            GoogleUser user = googleTokenVerifier.verify(idToken);
+            if(user == null) {
+                return "토큰 검증 실패";
+            }
+            body.setEmail(user.getEmail());
+            return homeService.searchWords(body);
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";
@@ -67,12 +74,20 @@ public class HomeController {
     }
 
     @PostMapping("/news")
-    public Object showNews(@RequestBody BasicRequest request) {
+    public Object showNews(HttpServletRequest request, @RequestBody BasicRequest body) {
         try {
-            if (request.getToken() == null || request.getToken().isEmpty()) {
+            String auth = request.getHeader("Authorization");
+            if (auth == null || !auth.startsWith("Bearer ")) {
                 return "token이 없습니다.";
             }
-            return homeService.showNews(request);
+            String idToken = auth.substring(7);
+            GoogleUser user = googleTokenVerifier.verify(idToken);
+            if(user == null) {
+                return "토큰 검증 실패";
+            }
+
+            body.setEmail(user.getEmail());
+            return homeService.showNews(body);
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";
