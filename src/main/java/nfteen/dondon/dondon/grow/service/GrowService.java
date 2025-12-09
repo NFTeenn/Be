@@ -11,12 +11,13 @@ import nfteen.dondon.dondon.grow.entity.UserAcc;
 import nfteen.dondon.dondon.grow.repository.DondonInfoRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.repository.UserAccRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Optional;
+import java.util.List;
 
 
 @Service
@@ -30,26 +31,30 @@ public class GrowService {
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
 
-        Optional<MyInfo> exist = myInfoRepository.findByUserId(user.getId());
-        if(exist.isPresent()) {
-            return exist.get();
-        }
+        return myInfoRepository.findByUserId(user.getId())
+                .orElseGet(() -> {
 
-        MyInfo info = MyInfo.builder()
-                .user(user)
-                .username(user.getName())
-                .days(1)
-                .quizStack(0)
-                .newsStack(0)
-                .recentGen(1)
-                .coin(0)
-                .build();
+                    MyInfo info = MyInfo.builder()
+                            .user(user)
+                            .username(user.getName())
+                            .days(1)
+                            .quizStack(0)
+                            .newsStack(0)
+                            .recentGen(1)
+                            .coin(0)
+                            .build();
 
-        myInfoRepository.save(info);
+                    try {
+                        MyInfo saved = myInfoRepository.save(info);
+                        createDefaultDondon(saved);
+                        return saved;
 
-        createDefaultDondon(info);
-
-        return info;
+                    } catch (DataIntegrityViolationException e) {
+                        // ✅ 동시 요청으로 이미 생성된 경우 재조회
+                        return myInfoRepository.findByUserId(user.getId())
+                                .orElseThrow(() -> e);
+                    }
+                });
     }
 
     @Transactional
@@ -68,7 +73,7 @@ public class GrowService {
         return dondonInfoRepository.save(dondon);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public MyPageResponse getMyPageInfo(GoogleUser user) {
 
         MyInfo myInfo = myInfoRepository.findByUserId(user.getId())
@@ -103,6 +108,29 @@ public class GrowService {
                 accId
         );
         return new MyPageResponse(myInfoResponse, dondonInfoResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DondonInfo> getGraduatedDonDons(Long userId) {
+        return dondonInfoRepository
+                .findByMyInfo_UserIdAndGraduationDateIsNotNull(userId);
+    }
+
+    @Transactional
+    public DondonInfo graduateAndAdopt(MyInfo info){
+        DondonInfo current = dondonInfoRepository
+                .findTopByMyInfoOrderByGenDesc(info)
+                .orElseThrow(() -> new IllegalStateException("돈돈이 없음"));
+
+        if (current.getLevel() != 10){
+            throw new IllegalStateException("최고 레벨에 도달하지 못했습니다.");
+        }
+
+        current.setGraduationDate(LocalDate.now(ZoneId.of("Asia/Seoul")));
+
+        info.setRecentGen(current.getGen() + 1);
+
+        return createDefaultDondon(info);
     }
 
 }

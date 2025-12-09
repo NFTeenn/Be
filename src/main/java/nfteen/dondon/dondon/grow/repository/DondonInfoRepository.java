@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DondonInfoRepository extends JpaRepository<DondonInfo, Long> {
-    List<DondonInfo> findByMyInfoAndGraduationDateIsNotNull(MyInfo myInfo);
+    List<DondonInfo> findByMyInfo_UserIdAndGraduationDateIsNotNull(Long userId);
 
     Optional<DondonInfo> findTopByMyInfoOrderByGenDesc(MyInfo myInfo);
 }
