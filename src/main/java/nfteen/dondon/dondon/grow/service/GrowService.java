@@ -7,8 +7,10 @@ import nfteen.dondon.dondon.grow.dto.MyInfoResponse;
 import nfteen.dondon.dondon.grow.dto.MyPageResponse;
 import nfteen.dondon.dondon.grow.entity.DondonInfo;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
+import nfteen.dondon.dondon.grow.entity.UserAcc;
 import nfteen.dondon.dondon.grow.repository.DondonInfoRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
+import nfteen.dondon.dondon.grow.repository.UserAccRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +25,12 @@ public class GrowService {
 
     private final MyInfoRepository myInfoRepository;
     private final DondonInfoRepository dondonInfoRepository;
+    private final UserAccRepository userAccRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
 
-        Optional<MyInfo> exist = myInfoRepository.findByUser(user);
+        Optional<MyInfo> exist = myInfoRepository.findByUserId(user.getId());
         if(exist.isPresent()) {
             return exist.get();
         }
@@ -60,7 +63,6 @@ public class GrowService {
                 .level(0)
                 .enterDate(today)
                 .style(0)
-                .acc(null)
                 .build();
 
         return dondonInfoRepository.save(dondon);
@@ -69,8 +71,8 @@ public class GrowService {
     @Transactional(readOnly = true)
     public MyPageResponse getMyPageInfo(GoogleUser user) {
 
-        MyInfo myInfo = myInfoRepository.findByUser(user)
-                .orElseThrow(()-> new IllegalArgumentException("MyInfo not found"));
+        MyInfo myInfo = myInfoRepository.findByUserId(user.getId())
+                .orElseGet(()-> createUserGrowInfo(user));
 
         MyInfoResponse myInfoResponse = new MyInfoResponse(
                 myInfo.getUsername(),
@@ -85,6 +87,12 @@ public class GrowService {
                 .findTopByMyInfoOrderByGenDesc(myInfo)
                 .orElseThrow(()->new IllegalArgumentException("돈돈이가 존재하지 않음"));
 
+        UserAcc equippedAcc = userAccRepository
+                .findByMyInfoAndEquippedTrue(myInfo)
+                .orElse(null);
+
+        Long accId = equippedAcc == null ? null : equippedAcc.getAcc().getId();
+
         DondonInfoResponse dondonInfoResponse = new DondonInfoResponse(
                 latestDondon.getGen(),
                 latestDondon.getNickname(),
@@ -92,7 +100,7 @@ public class GrowService {
                 latestDondon.getEnterDate(),
                 latestDondon.getGraduationDate(),
                 latestDondon.getStyle(),
-                latestDondon.getAcc() != null ? latestDondon.getAcc().getId() : null
+                accId
         );
         return new MyPageResponse(myInfoResponse, dondonInfoResponse);
     }

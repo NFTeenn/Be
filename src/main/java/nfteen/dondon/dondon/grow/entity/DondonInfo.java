@@ -30,8 +30,4 @@ public class DondonInfo {
     private LocalDate graduationDate;
 
     private int style;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "acc_id")
-    private Accessary acc;
 }
