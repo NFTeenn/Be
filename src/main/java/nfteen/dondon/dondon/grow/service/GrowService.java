@@ -122,7 +122,7 @@ public class GrowService {
                 .findTopByMyInfoOrderByGenDesc(info)
                 .orElseThrow(() -> new IllegalStateException("돈돈이 없음"));
 
-        if (current.getLevel() != 10){
+        if (current.getLevel() != 20){
             throw new IllegalStateException("최고 레벨에 도달하지 못했습니다.");
         }
 
@@ -131,6 +131,15 @@ public class GrowService {
         info.setRecentGen(current.getGen() + 1);
 
         return createDefaultDondon(info);
+    }
+
+    @Transactional
+    public void changeDondonName(Long userId, String newNickname) {
+        DondonInfo dondon = dondonInfoRepository
+                .findByMyInfo_UserIdAndGraduationDateIsNull(userId)
+                .orElseThrow(() -> new IllegalStateException("현재 성장 중인 돈돈이가 없습니다."));
+
+        dondon.setNickname(newNickname);
     }
 
 }

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
+import nfteen.dondon.dondon.grow.dto.ChangeNameRequest;
 import nfteen.dondon.dondon.grow.dto.MyPageResponse;
 import nfteen.dondon.dondon.grow.entity.DondonInfo;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
@@ -55,6 +56,16 @@ public class GrowController {
         DondonInfo newDondon = growService.graduateAndAdopt(info);
 
         return ResponseEntity.ok(newDondon);
+    }
+
+    @PatchMapping("/nickname")
+    public ResponseEntity<Void> changeDondonName(
+            HttpServletRequest request,
+            @RequestBody ChangeNameRequest body
+    ) {
+        GoogleUser user = getUserFromToken(request);
+        growService.changeDondonName(user.getId(), body.getNickname());
+        return ResponseEntity.ok().build();
     }
 
 }

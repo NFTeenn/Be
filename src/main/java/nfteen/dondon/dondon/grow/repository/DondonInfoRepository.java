@@ -11,4 +11,6 @@ public interface DondonInfoRepository extends JpaRepository<DondonInfo, Long> {
     List<DondonInfo> findByMyInfo_UserIdAndGraduationDateIsNotNull(Long userId);
 
     Optional<DondonInfo> findTopByMyInfoOrderByGenDesc(MyInfo myInfo);
+
+    Optional<DondonInfo> findByMyInfo_UserIdAndGraduationDateIsNull(Long userId);
 }
