@@ -1,5 +1,7 @@
 package nfteen.dondon.dondon.home.service;
 
+import lombok.RequiredArgsConstructor;
+import nfteen.dondon.dondon.grow.event.HomeLevelUpEvent;
 import nfteen.dondon.dondon.home.dto.*;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
@@ -8,6 +10,7 @@ import nfteen.dondon.dondon.home.repository.HomeRepository;
 import nfteen.dondon.dondon.home.repository.QuizRepository;
 import nfteen.dondon.dondon.home.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+@RequiredArgsConstructor
 @Service
 public class HomeService {
 
@@ -29,6 +33,16 @@ public class HomeService {
 
     @Autowired
     private WordRepository wordRepository;
+
+    private final ApplicationEventPublisher publisher;
+
+    public void levelUp(Home home) {
+        home.setLevel(home.getLevel() + 1);
+
+        publisher.publishEvent(
+                new HomeLevelUpEvent(home.getEmail(), home.getLevel())
+        );
+    }
 
     private void updateDailyStatus(Home home) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
@@ -66,7 +80,7 @@ public class HomeService {
             }
             if ("0".equals(mission.get(0))) {
                 mission.set(0, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
 
             if(request.isSolve()){
@@ -149,7 +163,7 @@ public class HomeService {
         } else{
             if ("0".equals(mission.get(1))) {
                 mission.set(1, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
             home.setMission(mission.toString());
             homeRepository.save(home);
@@ -208,7 +222,7 @@ public class HomeService {
             }
             if ("0".equals(mission.get(2))) {
                 mission.set(2, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
             home.setMission(mission.toString());
             homeRepository.save(home);
@@ -236,7 +250,7 @@ public class HomeService {
         }
         if ("0".equals(mission.get(3))) {
             mission.set(3, "1");
-            home.setLevel(home.getLevel() + 1);
+            levelUp(home);
         }
         home.setMission(mission.toString());
         homeRepository.save(home);
