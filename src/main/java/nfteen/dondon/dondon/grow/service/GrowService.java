@@ -37,6 +37,7 @@ public class GrowService {
                     MyInfo info = MyInfo.builder()
                             .user(user)
                             .username(user.getName())
+                            .email(user.getEmail())
                             .days(1)
                             .quizStack(0)
                             .newsStack(0)

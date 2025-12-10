@@ -22,6 +22,8 @@ public class MyInfo {
     @JoinColumn(name = "user_id")
     private GoogleUser user;
 
+    private String email;
+
     private String username;
     private int days;
     private int quizStack;
