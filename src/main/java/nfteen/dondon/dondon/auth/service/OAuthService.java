@@ -31,10 +31,9 @@ public class OAuthService {
 
         boolean isNewUser = (user == null);
 
-        // 2. 신규 유저라면 UserCreateEvent 발행
         if (isNewUser) {
+            user = userRepository.save(googleUser);
             eventPublisher.publishEvent(new UserCreateEvent(googleUser.getId()));
-            user = userRepository.save(googleUser); // 신규 생성
         }
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail());
