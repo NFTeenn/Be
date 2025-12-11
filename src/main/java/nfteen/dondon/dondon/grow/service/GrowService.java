@@ -2,13 +2,10 @@ package nfteen.dondon.dondon.grow.service;
 
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
-import nfteen.dondon.dondon.grow.dto.DondonInfoResponse;
-import nfteen.dondon.dondon.grow.dto.MyInfoResponse;
-import nfteen.dondon.dondon.grow.dto.MyPageResponse;
-import nfteen.dondon.dondon.grow.entity.DondonInfo;
-import nfteen.dondon.dondon.grow.entity.MyInfo;
-import nfteen.dondon.dondon.grow.entity.UserAcc;
+import nfteen.dondon.dondon.grow.dto.*;
+import nfteen.dondon.dondon.grow.entity.*;
 import nfteen.dondon.dondon.grow.repository.DondonInfoRepository;
+import nfteen.dondon.dondon.grow.repository.LikesRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.repository.UserAccRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,6 +24,7 @@ public class GrowService {
     private final MyInfoRepository myInfoRepository;
     private final DondonInfoRepository dondonInfoRepository;
     private final UserAccRepository userAccRepository;
+    private final LikesRepository likesRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -142,5 +140,48 @@ public class GrowService {
 
         dondon.setNickname(newNickname);
     }
+
+    @Transactional
+    public boolean saveLike(Long userId, Long targetId, TypeName type) {
+        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndType(userId,targetId,type);
+
+        if (exists) {
+            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
+            return false;
+        }
+
+
+        MyInfo info = myInfoRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
+
+
+        Like like = Like.builder()
+                .myInfo(info)
+                .targetId(targetId)
+                .type(type)
+                .build();
+        try{
+            likesRepository.save(like);
+            return true;
+        } catch (DataIntegrityViolationException e) {
+            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
+            return false;
+        }
+    }
+
+    public List<LikesResponse> getLikes(Long userId, TypeName type) {
+        List<Like> list;
+
+        if(type == null) {
+            list = likesRepository.findByMyInfo_UserId(userId);
+        } else{
+            list = likesRepository.findByMyInfo_UserIdAndType(userId, type);
+        }
+
+        return list.stream()
+                .map(l -> new LikesResponse(l.getTargetId(), l.getType().name()))
+                .toList();
+    }
+
 
 }
