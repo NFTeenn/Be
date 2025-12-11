@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.grow.dto.*;
 import nfteen.dondon.dondon.grow.entity.*;
-import nfteen.dondon.dondon.grow.repository.DondonInfoRepository;
-import nfteen.dondon.dondon.grow.repository.LikesRepository;
-import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
-import nfteen.dondon.dondon.grow.repository.UserAccRepository;
+import nfteen.dondon.dondon.grow.repository.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +22,7 @@ public class GrowService {
     private final DondonInfoRepository dondonInfoRepository;
     private final UserAccRepository userAccRepository;
     private final LikesRepository likesRepository;
+    private final UserPrizeRepository userPrizeRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -49,7 +47,6 @@ public class GrowService {
                         return saved;
 
                     } catch (DataIntegrityViolationException e) {
-                        // ✅ 동시 요청으로 이미 생성된 경우 재조회
                         return myInfoRepository.findByUserId(user.getId())
                                 .orElseThrow(() -> e);
                     }
@@ -68,6 +65,8 @@ public class GrowService {
                 .enterDate(today)
                 .style(0)
                 .build();
+
+        userPrizeRepository.updateAchieved(info.getUser().getId(), "FIRST_DONDON");
 
         return dondonInfoRepository.save(dondon);
     }
@@ -180,6 +179,20 @@ public class GrowService {
 
         return list.stream()
                 .map(l -> new LikesResponse(l.getTargetId(), l.getType().name()))
+                .toList();
+    }
+
+    @Transactional
+    public List<PrizeResponse> getPrizes(Long userId) {
+        List<UserPrize> userPrizes = userPrizeRepository.findByUserId(userId);
+
+        return userPrizes.stream()
+                .map(up -> new PrizeResponse(
+                        up.getPrize().getCode(),
+                        up.getPrize().getTitle(),
+                        up.getPrize().getDescription(),
+                        up.isAchieved()
+                ))
                 .toList();
     }
 

@@ -87,4 +87,11 @@ public class GrowController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/prizes")
+    public ResponseEntity<List<PrizeResponse>> getPrizes(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
+        List<PrizeResponse> prizes = growService.getPrizes(user.getId());
+        return ResponseEntity.ok(prizes);
+    }
+
 }
