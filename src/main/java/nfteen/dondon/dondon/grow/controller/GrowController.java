@@ -4,10 +4,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
-import nfteen.dondon.dondon.grow.dto.ChangeNameRequest;
-import nfteen.dondon.dondon.grow.dto.MyPageResponse;
+import nfteen.dondon.dondon.grow.dto.*;
 import nfteen.dondon.dondon.grow.entity.DondonInfo;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
+import nfteen.dondon.dondon.grow.entity.TypeName;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.service.GrowService;
 import org.springframework.http.ResponseEntity;
@@ -59,13 +59,32 @@ public class GrowController {
     }
 
     @PatchMapping("/nickname")
-    public ResponseEntity<Void> changeDondonName(
+    public ResponseEntity<ChangeNameResponse> changeDondonName(
             HttpServletRequest request,
             @RequestBody ChangeNameRequest body
     ) {
         GoogleUser user = getUserFromToken(request);
         growService.changeDondonName(user.getId(), body.getNickname());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ChangeNameResponse(body.getNickname()));
+    }
+
+    @PostMapping("/likes")
+    public ResponseEntity<LikeResponse> likeDondon(
+            HttpServletRequest request,
+            @RequestBody LikeRequest body) {
+        GoogleUser user = getUserFromToken(request);
+        boolean liked = growService.saveLike(user.getId(), body.getTargetId(), body.getType());
+
+        return ResponseEntity.ok(new LikeResponse(liked));
+    }
+
+    @GetMapping("/likes")
+    public ResponseEntity<List<LikesResponse>> getLikes(
+            HttpServletRequest request,
+            @RequestParam(required = false) TypeName type) {
+        GoogleUser user = getUserFromToken(request);
+        List<LikesResponse> list = growService.getLikes(user.getId(), type);
+        return ResponseEntity.ok(list);
     }
 
 }
