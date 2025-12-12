@@ -96,14 +96,17 @@ public class GrowController {
     }
 
     @PostMapping("/shop")
-    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries() {
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
         List<AccessaryResponse> accessaries = growService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }
 
     @PostMapping("/shop/buy")
-    public ResponseEntity<BuyAccResponse> buyAccessary(@RequestBody BuyAccRequest request) {
-        BuyAccResponse response = growService.buyAcc(request);
+    public ResponseEntity<BuyAccResponse> buyAccessary(HttpServletRequest request, @RequestBody BuyAccRequest body) {
+        GoogleUser user = getUserFromToken(request);
+        body.setUserId(user.getId());
+        BuyAccResponse response = growService.buyAcc(body);
         return ResponseEntity.ok(response);
     }
 
