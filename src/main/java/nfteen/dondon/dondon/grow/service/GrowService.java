@@ -5,7 +5,6 @@ import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.grow.dto.*;
 import nfteen.dondon.dondon.grow.entity.*;
 import nfteen.dondon.dondon.grow.repository.*;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,6 @@ public class GrowService {
     private final LikesRepository likesRepository;
     private final UserPrizeRepository userPrizeRepository;
     private final AccessaryRepository accessaryRepository;
-    private final ListableBeanFactory listableBeanFactory;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -143,47 +141,6 @@ public class GrowService {
         dondon.setNickname(newNickname);
     }
 
-    @Transactional
-    public boolean saveLike(Long userId, Long targetId, TypeName type) {
-        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndType(userId,targetId,type);
-
-        if (exists) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
-            return false;
-        }
-
-
-        MyInfo info = myInfoRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
-
-
-        Like like = Like.builder()
-                .myInfo(info)
-                .targetId(targetId)
-                .type(type)
-                .build();
-        try{
-            likesRepository.save(like);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
-            return false;
-        }
-    }
-
-    public List<LikesResponse> getLikes(Long userId, TypeName type) {
-        List<Like> list;
-
-        if(type == null) {
-            list = likesRepository.findByMyInfo_UserId(userId);
-        } else{
-            list = likesRepository.findByMyInfo_UserIdAndType(userId, type);
-        }
-
-        return list.stream()
-                .map(l -> new LikesResponse(l.getTargetId(), l.getType().name()))
-                .toList();
-    }
 
     @Transactional
     public List<PrizeResponse> getPrizes(Long userId) {
@@ -199,42 +156,7 @@ public class GrowService {
                 .toList();
     }
 
-    public List<AccessaryResponse> getAllAccessaries(){
-        List<Accessary> accessaries = accessaryRepository.findAll();
-        return accessaries.stream()
-                .map(acc -> new AccessaryResponse(acc.getId(), acc.getName(), acc.getDescription(), acc.getPrice()))
-                .collect(Collectors.toList());
-    }
 
-    @Transactional
-    public BuyAccResponse buyAcc(BuyAccRequest request) {
-        MyInfo info = myInfoRepository.findByUserId(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
-
-        Accessary acc = accessaryRepository.findById(request.getAccId())
-                .orElseThrow(() -> new IllegalArgumentException("악세서리 정보 없음"));
-
-        if(info.getCoin() < acc.getPrice()){
-            return new BuyAccResponse(false, "코인이 부족합니다.");
-        }
-
-        boolean alreadyOwned = userAccRepository.existsByMyInfoAndAcc(info, acc);
-        if(alreadyOwned) {
-            return new BuyAccResponse(false, "이미 소유한 악세서리입니다.");
-        }
-
-        info.setCoin(info.getCoin() - acc.getPrice());
-        myInfoRepository.save(info);
-
-        UserAcc userAcc = UserAcc.builder()
-                .myInfo(info)
-                .acc(acc)
-                .equipped(true)
-                .build();
-        userAccRepository.save(userAcc);
-
-        return new BuyAccResponse(true, "구매 완료");
-    }
 
 
 }
