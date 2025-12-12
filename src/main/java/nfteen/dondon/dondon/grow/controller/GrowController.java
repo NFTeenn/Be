@@ -11,6 +11,8 @@ import nfteen.dondon.dondon.grow.entity.MyInfo;
 import nfteen.dondon.dondon.grow.entity.TypeName;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.service.GrowService;
+import nfteen.dondon.dondon.grow.service.LikesService;
+import nfteen.dondon.dondon.grow.service.ShopService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GrowController {
     private final GrowService growService;
+    private final LikesService likesService;
+    private final ShopService shopService;
     private final GoogleTokenVerifier googleTokenVerifier;
     private final MyInfoRepository myInfoRepository;
 
@@ -74,7 +78,7 @@ public class GrowController {
             HttpServletRequest request,
             @RequestBody LikeRequest body) {
         GoogleUser user = getUserFromToken(request);
-        boolean liked = growService.saveLike(user.getId(), body.getTargetId(), body.getType());
+        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getType());
 
         return ResponseEntity.ok(new LikeResponse(liked));
     }
@@ -84,7 +88,7 @@ public class GrowController {
             HttpServletRequest request,
             @RequestParam(required = false) TypeName type) {
         GoogleUser user = getUserFromToken(request);
-        List<LikesResponse> list = growService.getLikes(user.getId(), type);
+        List<LikesResponse> list = likesService.getLikes(user.getId(), type);
         return ResponseEntity.ok(list);
     }
 
@@ -95,10 +99,10 @@ public class GrowController {
         return ResponseEntity.ok(prizes);
     }
 
-    @PostMapping("/shop")
+    @GetMapping("/shop")
     public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
-        List<AccessaryResponse> accessaries = growService.getAllAccessaries();
+        List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }
 
@@ -106,7 +110,7 @@ public class GrowController {
     public ResponseEntity<BuyAccResponse> buyAccessary(HttpServletRequest request, @RequestBody BuyAccRequest body) {
         GoogleUser user = getUserFromToken(request);
         body.setUserId(user.getId());
-        BuyAccResponse response = growService.buyAcc(body);
+        BuyAccResponse response = shopService.buyAcc(body);
         return ResponseEntity.ok(response);
     }
 
