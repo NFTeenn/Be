@@ -110,9 +110,21 @@ public class GrowService {
     }
 
     @Transactional(readOnly = true)
-    public List<DondonInfo> getGraduatedDonDons(Long userId) {
-        return dondonInfoRepository
+    public List<AdultDondonResponse> getGraduatedDonDons(Long userId) {
+        List<DondonInfo> list = dondonInfoRepository
                 .findByMyInfo_UserIdAndGraduationDateIsNotNull(userId);
+
+        return list.stream()
+                .map(d -> new AdultDondonResponse(
+                        d.getId(),
+                        d.getGen(),
+                        d.getNickname(),
+                        d.getLevel(),
+                        d.getEnterDate() != null ? d.getEnterDate().toString() : null,
+                        d.getGraduationDate() != null ? d.getGraduationDate().toString() : null,
+                        d.getStyle()
+                ))
+                .toList();
     }
 
     @Transactional
