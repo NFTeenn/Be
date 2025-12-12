@@ -32,11 +32,11 @@ public class ShopService {
     }
 
     @Transactional
-    public BuyAccResponse buyAcc(BuyAccRequest request) {
-        MyInfo info = myInfoRepository.findByUserId(request.getUserId())
+    public BuyAccResponse buyAcc(Long userId, Long accId) {
+        MyInfo info = myInfoRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
 
-        Accessary acc = accessaryRepository.findById(request.getAccId())
+        Accessary acc = accessaryRepository.findById(accId)
                 .orElseThrow(() -> new IllegalArgumentException("악세서리 정보 없음"));
 
         if(info.getCoin() < acc.getPrice()){

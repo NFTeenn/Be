@@ -109,8 +109,8 @@ public class GrowController {
     @PostMapping("/shop/buy")
     public ResponseEntity<BuyAccResponse> buyAccessary(HttpServletRequest request, @RequestBody BuyAccRequest body) {
         GoogleUser user = getUserFromToken(request);
-        body.setUserId(user.getId());
-        BuyAccResponse response = shopService.buyAcc(body);
+
+        BuyAccResponse response = shopService.buyAcc(user.getId(), body.getAccId());
         return ResponseEntity.ok(response);
     }
 
