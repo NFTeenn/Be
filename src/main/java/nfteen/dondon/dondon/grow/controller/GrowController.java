@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import nfteen.dondon.dondon.grow.dto.*;
+import nfteen.dondon.dondon.grow.entity.AccessaryResponse;
 import nfteen.dondon.dondon.grow.entity.DondonInfo;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
 import nfteen.dondon.dondon.grow.entity.TypeName;
@@ -92,6 +93,18 @@ public class GrowController {
         GoogleUser user = getUserFromToken(request);
         List<PrizeResponse> prizes = growService.getPrizes(user.getId());
         return ResponseEntity.ok(prizes);
+    }
+
+    @PostMapping("/shop")
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries() {
+        List<AccessaryResponse> accessaries = growService.getAllAccessaries();
+        return ResponseEntity.ok(accessaries);
+    }
+
+    @PostMapping("/shop/buy")
+    public ResponseEntity<BuyAccResponse> buyAccessary(@RequestBody BuyAccRequest request) {
+        BuyAccResponse response = growService.buyAcc(request);
+        return ResponseEntity.ok(response);
     }
 
 }
