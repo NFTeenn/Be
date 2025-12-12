@@ -8,4 +8,5 @@ import lombok.Getter;
 public class LikesResponse {
     private Long targetId;
     private String type;
+    private boolean liked;
 }

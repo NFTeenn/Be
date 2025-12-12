@@ -86,9 +86,10 @@ public class GrowController {
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(
             HttpServletRequest request,
-            @RequestParam(required = false) TypeName type) {
+            @RequestParam(required = false) TypeName type,
+            @RequestParam(required = false) Long targetId) {
         GoogleUser user = getUserFromToken(request);
-        List<LikesResponse> list = likesService.getLikes(user.getId(), type);
+        List<LikesResponse> list = likesService.getLikes(user.getId(), type, targetId);
         return ResponseEntity.ok(list);
     }
 
