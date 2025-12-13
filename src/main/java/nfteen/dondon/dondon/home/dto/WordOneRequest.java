@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SearchWordResponse {
-    private String word;
-    private String description;
-    private String subject;
+public class WordOneRequest {
+    private String token;
+    private String email;
+    private int num;
 }

@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -179,30 +176,38 @@ public class HomeService {
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
-    public ShowWordResponse showWords(String email) {
+    public List<WordResponse> showWords(String email) {
 
         Home home = homeRepository.findById(email)
-                .orElseGet(()->{
+                .orElseGet(() -> {
                     Home newHome = Home.builder()
                             .email(email)
-                            .createDate(LocalDate.now(ZoneId.of("Asia/Seoul"))).build();
+                            .createDate(LocalDate.now(ZoneId.of("Asia/Seoul")))
+                            .build();
                     return homeRepository.save(newHome);
                 });
-        if(home == null) {
+
+        if (home == null) {
             throw new IllegalStateException("Home 생성 실패 : email =" + email);
         }
+
         updateDailyStatus(home);
 
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
-        List<String> words = new ArrayList<>();
-        for (int i = 0; i < Math.min(4, allWords.size()); i++) {
-            words.add(allWords.get(i).getWord());
-        }
-        return new ShowWordResponse(words);
+
+        return allWords.stream()
+                .limit(4)
+                .map(word -> new WordResponse(
+                        word.getNum(),
+                        word.getWord(),
+                        word.getDescription(),
+                        word.getSubject()
+                ))
+                .toList();
     }
 
-    public List<SearchWordResponse> searchWords(SearchWordRequest request) {
+    public List<WordResponse> searchWords(SearchWordRequest request) {
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         updateDailyStatus(home);
 
@@ -229,8 +234,41 @@ public class HomeService {
         }
         List<Word> words = wordRepository.findByWordContainingIgnoreCase(search);
         return words.stream()
-                .map(word -> new SearchWordResponse(word.getWord(), word.getDescription(), word.getSubject()))
+                .map(word -> new WordResponse(word.getNum(), word.getWord(), word.getDescription(), word.getSubject()))
                 .toList();
+    }
+
+    public WordResponse wordOne(WordOneRequest request) {
+        Optional<Word> wordOpt = wordRepository.findById(request.getNum());
+        if (wordOpt.isEmpty()) {
+            return null;
+        }
+        Word word = wordOpt.get();
+
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        if (home != null) {
+            List<String> mission = new ArrayList<>();
+            for (String s : home.getMission()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "")
+                    .split(",")) {
+                mission.add(s.trim());
+            }
+            if ("0".equals(mission.get(2))) {
+                mission.set(2, "1");
+                levelUp(home);
+            }
+            home.setMission(mission.toString());
+            homeRepository.save(home);
+        }
+
+        return new WordResponse(
+                word.getNum(),
+                word.getWord(),
+                word.getDescription(),
+                word.getSubject()
+        );
     }
 
     public int showNews(BasicRequest request) {
