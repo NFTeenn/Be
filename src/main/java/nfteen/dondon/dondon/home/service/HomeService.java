@@ -229,7 +229,7 @@ public class HomeService {
         }
         List<Word> words = wordRepository.findByWordContainingIgnoreCase(search);
         return words.stream()
-                .map(word -> new SearchWordResponse(word.getWord(), word.getDescription(), word.getSubject()))
+                .map(word -> new SearchWordResponse(word.getNum(), word.getWord(), word.getDescription(), word.getSubject()))
                 .toList();
     }
 
