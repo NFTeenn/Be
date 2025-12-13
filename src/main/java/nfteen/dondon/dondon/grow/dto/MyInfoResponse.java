@@ -12,4 +12,16 @@ public class MyInfoResponse {
     private int newsStack;
     private int recentGen;
     private int coin;
+
+    @Getter
+    @AllArgsConstructor
+    public static class AdultDondonResponse {
+        private Long id;
+        private int gen;
+        private String nickname;
+        private int level;
+        private String enterDate;
+        private String graduationDate;
+        private int style;
+    }
 }

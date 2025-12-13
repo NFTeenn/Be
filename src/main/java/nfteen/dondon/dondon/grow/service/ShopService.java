@@ -1,15 +1,12 @@
 package nfteen.dondon.dondon.grow.service;
 
 import lombok.RequiredArgsConstructor;
-import nfteen.dondon.dondon.grow.dto.BuyAccRequest;
 import nfteen.dondon.dondon.grow.dto.BuyAccResponse;
 import nfteen.dondon.dondon.grow.dto.LikesResponse;
 import nfteen.dondon.dondon.grow.entity.*;
 import nfteen.dondon.dondon.grow.repository.AccessaryRepository;
-import nfteen.dondon.dondon.grow.repository.LikesRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.repository.UserAccRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +21,10 @@ public class ShopService {
     private final AccessaryRepository accessaryRepository;
     private final UserAccRepository userAccRepository;
 
-    public List<AccessaryResponse> getAllAccessaries(){
+    public List<LikesResponse.AccessaryResponse> getAllAccessaries(){
         List<Accessary> accessaries = accessaryRepository.findAll();
         return accessaries.stream()
-                .map(acc -> new AccessaryResponse(acc.getId(), acc.getName(), acc.getDescription(), acc.getPrice()))
+                .map(acc -> new LikesResponse.AccessaryResponse(acc.getId(), acc.getName(), acc.getDescription(), acc.getPrice()))
                 .collect(Collectors.toList());
     }
 

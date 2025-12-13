@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import nfteen.dondon.dondon.grow.dto.*;
-import nfteen.dondon.dondon.grow.entity.AccessaryResponse;
-import nfteen.dondon.dondon.grow.entity.DondonInfo;
-import nfteen.dondon.dondon.grow.entity.MyInfo;
-import nfteen.dondon.dondon.grow.entity.TypeName;
+import nfteen.dondon.dondon.grow.entity.*;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import nfteen.dondon.dondon.grow.service.GrowService;
 import nfteen.dondon.dondon.grow.service.LikesService;
@@ -49,7 +46,7 @@ public class GrowController {
     }
 
     @GetMapping("/adult")
-    public List<DondonInfo> getGraduatedDonDons(@RequestParam Long userId) {
+    public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(@RequestParam Long userId) {
         return growService.getGraduatedDonDons(userId);
     }
 
@@ -101,9 +98,9 @@ public class GrowController {
     }
 
     @GetMapping("/shop")
-    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
+    public ResponseEntity<List<LikesResponse.AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
-        List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
+        List<LikesResponse.AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }
 

@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -110,12 +109,12 @@ public class GrowService {
     }
 
     @Transactional(readOnly = true)
-    public List<AdultDondonResponse> getGraduatedDonDons(Long userId) {
+    public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(Long userId) {
         List<DondonInfo> list = dondonInfoRepository
                 .findByMyInfo_UserIdAndGraduationDateIsNotNull(userId);
 
         return list.stream()
-                .map(d -> new AdultDondonResponse(
+                .map(d -> new MyInfoResponse.AdultDondonResponse(
                         d.getId(),
                         d.getGen(),
                         d.getNickname(),
