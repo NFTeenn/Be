@@ -5,6 +5,9 @@ import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.dto.TokenResponse;
 import nfteen.dondon.dondon.auth.jwt.JWTUtil;
 import nfteen.dondon.dondon.auth.repository.UserRepository;
+import nfteen.dondon.dondon.grow.event.UserCreateEvent;
+import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +16,9 @@ public class OAuthService {
 
     private final GoogleTokenVerifier googleTokenVerifier;
     private final UserRepository userRepository;
+    private final MyInfoRepository myInfoRepository;
     private final JWTUtil jwtUtil;
+    private final ApplicationEventPublisher eventPublisher;
 
     public TokenResponse loginWithGoogle(String idToken) {
         GoogleUser googleUser = googleTokenVerifier.verify(idToken);
@@ -22,8 +27,14 @@ public class OAuthService {
             throw new IllegalArgumentException("Google 인증 실패");
         }
 
-        GoogleUser user = userRepository.findByEmail(googleUser.getEmail())
-                .orElseGet(() -> userRepository.save(googleUser));
+        GoogleUser user = userRepository.findByEmail(googleUser.getEmail()).orElse(null);
+
+        boolean isNewUser = (user == null);
+
+        if (isNewUser) {
+            user = userRepository.save(googleUser);
+            eventPublisher.publishEvent(new UserCreateEvent(googleUser.getId()));
+        }
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());

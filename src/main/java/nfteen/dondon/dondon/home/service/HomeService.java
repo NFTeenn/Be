@@ -1,5 +1,7 @@
 package nfteen.dondon.dondon.home.service;
 
+import lombok.RequiredArgsConstructor;
+import nfteen.dondon.dondon.grow.event.HomeLevelUpEvent;
 import nfteen.dondon.dondon.home.dto.*;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
@@ -8,6 +10,7 @@ import nfteen.dondon.dondon.home.repository.HomeRepository;
 import nfteen.dondon.dondon.home.repository.QuizRepository;
 import nfteen.dondon.dondon.home.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+@RequiredArgsConstructor
 @Service
 public class HomeService {
 
@@ -29,6 +33,16 @@ public class HomeService {
 
     @Autowired
     private WordRepository wordRepository;
+
+    private final ApplicationEventPublisher publisher;
+
+    public void levelUp(Home home) {
+        home.setLevel(home.getLevel() + 1);
+
+        publisher.publishEvent(
+                new HomeLevelUpEvent(home.getEmail(), home.getLevel())
+        );
+    }
 
     private void updateDailyStatus(Home home) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
@@ -66,7 +80,7 @@ public class HomeService {
             }
             if ("0".equals(mission.get(0))) {
                 mission.set(0, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
 
             if(request.isSolve()){
@@ -149,7 +163,7 @@ public class HomeService {
         } else{
             if ("0".equals(mission.get(1))) {
                 mission.set(1, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
             home.setMission(mission.toString());
             homeRepository.save(home);
@@ -165,9 +179,20 @@ public class HomeService {
         return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
     }
 
-    public ShowWordResponse showWords(BasicRequest request) {
-        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+    public ShowWordResponse showWords(String email) {
+
+        Home home = homeRepository.findById(email)
+                .orElseGet(()->{
+                    Home newHome = Home.builder()
+                            .email(email)
+                            .createDate(LocalDate.now(ZoneId.of("Asia/Seoul"))).build();
+                    return homeRepository.save(newHome);
+                });
+        if(home == null) {
+            throw new IllegalStateException("Home 생성 실패 : email =" + email);
+        }
         updateDailyStatus(home);
+
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
         List<String> words = new ArrayList<>();
@@ -197,7 +222,7 @@ public class HomeService {
             }
             if ("0".equals(mission.get(2))) {
                 mission.set(2, "1");
-                home.setLevel(home.getLevel() + 1);
+                levelUp(home);
             }
             home.setMission(mission.toString());
             homeRepository.save(home);
@@ -225,7 +250,7 @@ public class HomeService {
         }
         if ("0".equals(mission.get(3))) {
             mission.set(3, "1");
-            home.setLevel(home.getLevel() + 1);
+            levelUp(home);
         }
         home.setMission(mission.toString());
         homeRepository.save(home);
