@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SearchWordResponse {
+public class WordResponse {
     private int num;
     private String word;
     private String description;
