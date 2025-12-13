@@ -32,7 +32,7 @@ public class HomeController {
         }
     }
 
-    @GetMapping("/word")
+    @GetMapping("/words")
     public Object showWord(HttpServletRequest request) {
         try {
             String auth = request.getHeader("Authorization");
@@ -53,7 +53,7 @@ public class HomeController {
         }
     }
 
-    @PostMapping("/word/search")
+    @PostMapping("/words/search")
     public Object searchWord(HttpServletRequest request, @RequestBody SearchWordRequest body) {
         try {
             String auth = request.getHeader("Authorization");
