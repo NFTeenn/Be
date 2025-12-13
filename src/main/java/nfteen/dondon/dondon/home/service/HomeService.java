@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -240,6 +237,40 @@ public class HomeService {
                 .map(word -> new WordResponse(word.getNum(), word.getWord(), word.getDescription(), word.getSubject()))
                 .toList();
     }
+
+    public WordResponse wordOne(WordOneRequest request) {
+        Optional<Word> wordOpt = wordRepository.findById(request.getNum());
+        if (wordOpt.isEmpty()) {
+            return null;
+        }
+        Word word = wordOpt.get();
+
+        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+        if (home != null) {
+            List<String> mission = new ArrayList<>();
+            for (String s : home.getMission()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "")
+                    .split(",")) {
+                mission.add(s.trim());
+            }
+            if ("0".equals(mission.get(2))) {
+                mission.set(2, "1");
+                levelUp(home);
+            }
+            home.setMission(mission.toString());
+            homeRepository.save(home);
+        }
+
+        return new WordResponse(
+                word.getNum(),
+                word.getWord(),
+                word.getDescription(),
+                word.getSubject()
+        );
+    }
+
     public int showNews(BasicRequest request) {
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         updateDailyStatus(home);
