@@ -46,17 +46,19 @@ public class GrowController {
     }
 
     @GetMapping("/adult")
-    public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(@RequestParam Long userId) {
-        return growService.getGraduatedDonDons(userId);
+    public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
+        return growService.getGraduatedDonDons(user.getId());
     }
 
     @PostMapping("/graduate")
-    public ResponseEntity<DondonInfo> graduateDondon(@RequestParam Long userId) {
-        MyInfo info = myInfoRepository.findByUserId(userId)
+    public ResponseEntity<DondonInfo> graduateDondon(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
+
+        MyInfo info = myInfoRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
 
         DondonInfo newDondon = growService.graduateAndAdopt(info);
-
         return ResponseEntity.ok(newDondon);
     }
 
