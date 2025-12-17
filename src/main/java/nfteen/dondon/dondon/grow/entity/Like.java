@@ -25,6 +25,4 @@ public class Like {
 
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    private TypeName type;
 }

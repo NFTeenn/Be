@@ -1,20 +1,16 @@
 package nfteen.dondon.dondon.grow.service;
 
 import lombok.RequiredArgsConstructor;
-import nfteen.dondon.dondon.grow.dto.LikeResponse;
 import nfteen.dondon.dondon.grow.dto.LikesResponse;
 import nfteen.dondon.dondon.grow.entity.Like;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
-import nfteen.dondon.dondon.grow.entity.TypeName;
 import nfteen.dondon.dondon.grow.repository.LikesRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,11 +21,11 @@ public class LikesService {
     private final ListableBeanFactory listableBeanFactory;
 
     @Transactional
-    public boolean saveLike(Long userId, Long targetId, TypeName type, String des) {
-        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndTypeAndDescription(userId,targetId,type, des);
+    public boolean saveLike(Long userId, Long targetId, String des) {
+        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndDescription(userId,targetId, des);
 
         if (exists) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndTypeAndDescription(userId, targetId, type, des);
+            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndDescription(userId, targetId, des);
             return false;
         }
 
@@ -40,7 +36,6 @@ public class LikesService {
         Like like = Like.builder()
                 .myInfo(info)
                 .targetId(targetId)
-                .type(type)
                 .description(des)
                 .build();
 
@@ -48,15 +43,14 @@ public class LikesService {
         return true;
     }
 
-    public List<LikesResponse> getLikes(Long userId, TypeName type, String des) {
+    public List<LikesResponse> getLikes(Long userId, String des) {
 
-        List<Like> list = likesRepository.findByMyInfo_UserIdAndTypeAndDescription(userId, type, des);
+        List<Like> list = likesRepository.findByMyInfo_UserIdAndDescription(userId, des);
 
         return list.stream()
                 .map(l -> new LikesResponse(
                         l.getTargetId(),
                         l.getDescription(),
-                        l.getType().name(),
                         true
                 ))
                 .toList();
