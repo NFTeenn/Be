@@ -77,18 +77,16 @@ public class GrowController {
             HttpServletRequest request,
             @RequestBody LikeRequest body) {
         GoogleUser user = getUserFromToken(request);
-        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getType());
+        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getType(), body.getDescription());
 
         return ResponseEntity.ok(new LikeResponse(liked));
     }
 
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(
-            HttpServletRequest request,
-            @RequestParam(required = false) TypeName type,
-            @RequestParam(required = false) Long targetId) {
+            HttpServletRequest request, @RequestParam TypeName type, @RequestParam String des) {
         GoogleUser user = getUserFromToken(request);
-        List<LikesResponse> list = likesService.getLikes(user.getId(), type, targetId);
+        List<LikesResponse> list = likesService.getLikes(user.getId(), type, des);
         return ResponseEntity.ok(list);
     }
 
@@ -100,9 +98,9 @@ public class GrowController {
     }
 
     @GetMapping("/shop")
-    public ResponseEntity<List<LikesResponse.AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
-        List<LikesResponse.AccessaryResponse> accessaries = shopService.getAllAccessaries();
+        List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }
 
