@@ -21,12 +21,19 @@ public class HomeController {
     private GoogleTokenVerifier googleTokenVerifier;
 
     @PostMapping
-    public Object handleHome(@RequestBody HomeRequest request) {
+    public Object handleHome(HttpServletRequest request, @RequestBody HomeRequest body) {
         try {
-            if (request.getToken() == null || request.getToken().isEmpty()) {
+            String auth = request.getHeader("Authorization");
+            if (auth == null || !auth.startsWith("Bearer ")) {
                 return "token이 없습니다.";
             }
-            return homeService.processHome(request);
+            String idToken = auth.substring(7);
+            GoogleUser user = googleTokenVerifier.verify(idToken);
+            if (user == null) {
+                return "토큰 검증 실패";
+            }
+            body.setEmail(user.getEmail());
+            return homeService.processHome(body);
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";

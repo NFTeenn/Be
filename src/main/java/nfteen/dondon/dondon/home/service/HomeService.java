@@ -58,10 +58,6 @@ public class HomeService {
     }
 
     public HomeResponse processHome(HomeRequest request) throws Exception {
-        if (request.getToken() == null || request.getToken().isEmpty()) {
-            return null;
-        }
-
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         List<String> mission = new ArrayList<>();
         int day, level, quizCount;
@@ -80,7 +76,7 @@ public class HomeService {
                 levelUp(home);
             }
 
-            if(request.isSolve()){
+            if (request.isSolve()) {
                 home.setQuizCount(home.getQuizCount() + 1);
             }
 
@@ -92,7 +88,6 @@ public class HomeService {
             quizCount = home.getQuizCount();
 
         } else {
-            mission = new ArrayList<>();
             mission.add("1");
             for (int i = 1; i < 4; i++) mission.add("0");
 
@@ -119,45 +114,28 @@ public class HomeService {
         if (quizCount < 5) {
             List<Quiz> quizzes = quizRepository.findAll();
             if (!quizzes.isEmpty()) {
-                Random rand = new Random();
-                Quiz selected = quizzes.get(rand.nextInt(quizzes.size()));
+                Quiz selected = quizzes.get(new Random().nextInt(quizzes.size()));
 
                 quiz = selected.getQuiz();
                 content = selected.getContent();
 
                 String rawResult = selected.getResult();
                 if ("객관식퀴즈".equals(selected.getType())) {
-                    a = new ArrayList<>();
-                    a.add(selected.getA1());
-                    a.add(selected.getA2());
-                    a.add(selected.getA3());
-                    a.add(selected.getA4());
-
+                    a = List.of(
+                            selected.getA1(),
+                            selected.getA2(),
+                            selected.getA3(),
+                            selected.getA4()
+                    );
                     if (rawResult != null && rawResult.contains("번")) {
-                        try {
-                            result = Integer.parseInt(
-                                    rawResult.replace("번", "").trim()
-                            );
-                        } catch (Exception e) {
-                            result = -1;
-                        }
+                        result = Integer.parseInt(rawResult.replace("번", "").trim());
                     }
-                }
-                else if ("OX퀴즈".equals(selected.getType())) {
-                    a = null;
-                    if (rawResult != null) {
-
-                        if (rawResult.contains("(O)")) {
-                            result = 0; // O → 0
-                        } else if (rawResult.contains("(X)")) {
-                            result = 6; // X → 6
-                        } else {
-                            result = -1;
-                        }
-                    }
+                } else if ("OX퀴즈".equals(selected.getType())) {
+                    result = rawResult.contains("(O)") ? 0 :
+                            rawResult.contains("(X)") ? 6 : -1;
                 }
             }
-        } else{
+        } else {
             if ("0".equals(mission.get(1))) {
                 mission.set(1, "1");
                 levelUp(home);
@@ -169,11 +147,15 @@ public class HomeService {
 
         List<Word> allWords = wordRepository.findAll();
         Collections.shuffle(allWords);
-        List<String> words = new ArrayList<>();
-        for (int i = 0; i < Math.min(6, allWords.size()); i++) {
-            words.add(allWords.get(i).getWord());
-        }
-        return new HomeResponse(day, level, mission, quizCount, quiz, a, words, result, content);
+
+        List<String> words = allWords.stream()
+                .limit(6)
+                .map(Word::getWord)
+                .toList();
+
+        return new HomeResponse(
+                day, level, mission, quizCount, quiz, a, words, result, content
+        );
     }
 
     public List<WordResponse> showWords(String email) {
