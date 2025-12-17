@@ -8,15 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LikesRepository extends JpaRepository<Like, Long> {
-    List<Like> findByMyInfo_UserId(Long userId);
+    List<Like> findByMyInfo_UserIdAndTypeAndDescription(Long myInfoUserId, TypeName type, String description);
 
-    List<Like> findByMyInfo_UserIdAndType(Long myInfoUserId, TypeName type);
+    boolean existsByMyInfo_UserIdAndTargetIdAndTypeAndDescription(Long myInfoUserId, Long targetId, TypeName type, String description);
 
-    Optional<Like> findByMyInfo_UserIdAndTargetId(Long userId, Long targetId);
-
-    Optional<Like>findByMyInfo_UserIdAndTargetIdAndType(Long userId, Long targetId, TypeName type);
-
-    boolean existsByMyInfo_UserIdAndTargetIdAndType(Long userId, Long targetId, TypeName type);
-
-    void deleteByMyInfo_UserIdAndTargetIdAndType(Long userId, Long targetId, TypeName type);
+    void deleteByMyInfo_UserIdAndTargetIdAndTypeAndDescription(Long myInfoUserId, Long targetId, TypeName type, String description);
 }

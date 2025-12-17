@@ -9,4 +9,5 @@ import nfteen.dondon.dondon.grow.entity.TypeName;
 public class LikeRequest {
     private Long targetId;
     private TypeName type;
+    private String description;
 }
