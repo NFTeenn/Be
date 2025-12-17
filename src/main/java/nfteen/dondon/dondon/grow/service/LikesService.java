@@ -25,11 +25,11 @@ public class LikesService {
     private final ListableBeanFactory listableBeanFactory;
 
     @Transactional
-    public boolean saveLike(Long userId, Long targetId, TypeName type) {
-        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndType(userId,targetId,type);
+    public boolean saveLike(Long userId, Long targetId, TypeName type, String des) {
+        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndTypeAndDescription(userId,targetId,type, des);
 
         if (exists) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
+            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndTypeAndDescription(userId, targetId, type, des);
             return false;
         }
 
@@ -37,44 +37,28 @@ public class LikesService {
         MyInfo info = myInfoRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
 
-
         Like like = Like.builder()
                 .myInfo(info)
                 .targetId(targetId)
                 .type(type)
+                .description(des)
                 .build();
-        try{
-            likesRepository.save(like);
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
-            return false;
-        }
+
+        likesRepository.save(like);
+        return true;
     }
 
-    public List<LikesResponse> getLikes(Long userId, TypeName type, Long targetId) {
+    public List<LikesResponse> getLikes(Long userId, TypeName type, String des) {
 
-        if(targetId != null){
-            Optional<Like> like = (type == null)
-                    ? likesRepository.findByMyInfo_UserIdAndTargetId(userId, targetId)
-                    : likesRepository.findByMyInfo_UserIdAndTargetIdAndType(userId, targetId, type);
-
-            return List.of(
-                    like.map(l -> new LikesResponse(l.getTargetId(), l.getType().name(), true))
-                            .orElse(new LikesResponse(targetId, type != null ? type.name() : null , false))
-            );
-        }
-
-        List<Like> list;
-
-        if(type == null) {
-            list = likesRepository.findByMyInfo_UserId(userId);
-        } else{
-            list = likesRepository.findByMyInfo_UserIdAndType(userId, type);
-        }
+        List<Like> list = likesRepository.findByMyInfo_UserIdAndTypeAndDescription(userId, type, des);
 
         return list.stream()
-                .map(l -> new LikesResponse(l.getTargetId(), l.getType().name(), true))
+                .map(l -> new LikesResponse(
+                        l.getTargetId(),
+                        l.getDescription(),
+                        l.getType().name(),
+                        true
+                ))
                 .toList();
     }
 
