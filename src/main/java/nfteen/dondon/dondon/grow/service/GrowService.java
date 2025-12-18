@@ -30,16 +30,16 @@ public class GrowService {
                 .orElseGet(() -> {
 
                     try{
-                    MyInfo info = MyInfo.builder()
-                            .user(user)
-                            .username(user.getName())
-                            .email(user.getEmail())
-                            .days(1)
-                            .quizStack(0)
-                            .newsStack(0)
-                            .recentGen(1)
-                            .coin(0)
-                            .build();
+                        MyInfo info = MyInfo.builder()
+                                .user(user)
+                                .username(user.getName())
+                                .email(user.getEmail())
+                                .days(1)
+                                .quizStack(0)
+                                .newsStack(0)
+                                .recentGen(1)
+                                .coin(0)
+                                .build();
 
                         MyInfo saved = myInfoRepository.save(info);
                         createDefaultDondon(saved);
@@ -63,8 +63,6 @@ public class GrowService {
                 .enterDate(today)
                 .style(0)
                 .build();
-
-        userPrizeRepository.updateAchieved(info.getUser().getId(), "FIRST_DONDON");
 
         return dondonInfoRepository.save(dondon);
     }

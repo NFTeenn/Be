@@ -30,16 +30,16 @@ public class UserCreateEventListener {
 
         growService.createUserGrowInfo(user);
 
-        List<Prize> prizes = prizeRepository.findAll();
+        Prize prize = prizeRepository.findByCode("FIRST_DONDON")
+                .orElseThrow(() -> new IllegalArgumentException("FIRST_DONDON prize 없음"));
 
-        List<UserPrize> list = prizes.stream()
-                .map(prize -> UserPrize.builder()
-                        .user(user)
-                        .prize(prize)
-                        .achieved(false)
-                        .build())
-                .toList();
-        userPrizeRepository.saveAll(list);
+        UserPrize userPrize = UserPrize.builder()
+                .user(user)
+                .prize(prize)
+                .achieved(true)
+                .build();
+
+        userPrizeRepository.save(userPrize);
     }
 
 }
