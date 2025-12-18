@@ -48,7 +48,7 @@ public class LikesService {
                 .myInfo(info)
                 .targetId(targetId)
                 .description(description)
-                .word(word) // 연관관계 있으면 추천
+                .word(word)
                 .build();
 
         likesRepository.save(like);

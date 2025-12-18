@@ -25,7 +25,6 @@ public class Like {
     private int targetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "word_id")
     private Word word;
 
     private String description;
