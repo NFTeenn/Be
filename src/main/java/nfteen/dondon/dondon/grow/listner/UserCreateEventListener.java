@@ -8,6 +8,7 @@ import nfteen.dondon.dondon.grow.entity.UserPrize;
 import nfteen.dondon.dondon.grow.event.UserCreateEvent;
 import nfteen.dondon.dondon.grow.repository.PrizeRepository;
 import nfteen.dondon.dondon.grow.repository.UserPrizeRepository;
+import nfteen.dondon.dondon.grow.service.GrowService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +20,15 @@ public class UserCreateEventListener {
     private final UserRepository userRepository;
     private final PrizeRepository prizeRepository;
     private final UserPrizeRepository userPrizeRepository;
+    private final GrowService growService;
 
     @EventListener
     public void handleUserCreateEvent(UserCreateEvent event) {
         Long userId = event.getUserId();
         GoogleUser user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
+
+        growService.createUserGrowInfo(user);
 
         List<Prize> prizes = prizeRepository.findAll();
 
