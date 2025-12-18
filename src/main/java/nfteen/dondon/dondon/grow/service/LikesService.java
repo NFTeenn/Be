@@ -6,6 +6,8 @@ import nfteen.dondon.dondon.grow.entity.Like;
 import nfteen.dondon.dondon.grow.entity.MyInfo;
 import nfteen.dondon.dondon.grow.repository.LikesRepository;
 import nfteen.dondon.dondon.grow.repository.MyInfoRepository;
+import nfteen.dondon.dondon.home.entity.Word;
+import nfteen.dondon.dondon.home.repository.WordRepository;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,17 +20,26 @@ public class LikesService {
 
     private final LikesRepository likesRepository;
     private final MyInfoRepository myInfoRepository;
-    private final ListableBeanFactory listableBeanFactory;
+    private final WordRepository wordRepository;
 
     @Transactional
-    public boolean saveLike(Long userId, Long targetId, String des) {
-        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndDescription(userId,targetId, des);
+    public boolean saveLike(Long userId, int targetId) {
+        Word word = wordRepository.findById(targetId)
+                .orElseThrow(() -> new IllegalArgumentException("단어 없음"));
+
+        String description = word.getDescription();
+
+        boolean exists =
+                likesRepository.existsByMyInfo_UserIdAndTargetIdAndDescription(
+                        userId, targetId, description
+                );
 
         if (exists) {
-            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndDescription(userId, targetId, des);
+            likesRepository.deleteByMyInfo_UserIdAndTargetIdAndDescription(
+                    userId, targetId, description
+            );
             return false;
         }
-
 
         MyInfo info = myInfoRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
@@ -36,7 +47,8 @@ public class LikesService {
         Like like = Like.builder()
                 .myInfo(info)
                 .targetId(targetId)
-                .description(des)
+                .description(description)
+                .word(word)
                 .build();
 
         likesRepository.save(like);
@@ -54,7 +66,7 @@ public class LikesService {
         return list.stream()
                 .map(l -> new LikesResponse(
                         l.getTargetId(),
-                        l.getWord(),
+                        l.getWord().getWord(),
                         l.getDescription(),
                         true
                 ))

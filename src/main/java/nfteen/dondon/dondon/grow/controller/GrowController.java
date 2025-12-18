@@ -87,11 +87,13 @@ public class GrowController {
     public ResponseEntity<LikeResponse> likeDondon(
             HttpServletRequest request,
             @RequestBody LikeRequest body) {
+
         GoogleUser user = getUserFromToken(request);
-        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getDescription());
+        boolean liked = likesService.saveLike(user.getId(), body.getTargetId());
 
         return ResponseEntity.ok(new LikeResponse(liked));
     }
+
 
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(

@@ -8,7 +8,7 @@ import java.util.List;
 public interface LikesRepository extends JpaRepository<Like, Long> {
     List<Like> findByMyInfo_UserId(Long myInfoUserId);
 
-    boolean existsByMyInfo_UserIdAndTargetIdAndDescription(Long myInfoUserId, Long targetId, String description);
+    boolean existsByMyInfo_UserIdAndTargetIdAndDescription(Long myInfoUserId, int targetId, String description);
 
-    void deleteByMyInfo_UserIdAndTargetIdAndDescription(Long myInfoUserId, Long targetId, String description);
+    void deleteByMyInfo_UserIdAndTargetIdAndDescription(Long myInfoUserId, int targetId, String description);
 }

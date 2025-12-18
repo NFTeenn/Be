@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class LikesResponse {
-    private Long targetId;
+    private int targetId;
     private String word;
     private String description;
     private boolean liked;
