@@ -29,6 +29,7 @@ public class GrowService {
         return myInfoRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
 
+                    try{
                     MyInfo info = MyInfo.builder()
                             .user(user)
                             .username(user.getName())
@@ -40,14 +41,12 @@ public class GrowService {
                             .coin(0)
                             .build();
 
-                    try {
                         MyInfo saved = myInfoRepository.save(info);
                         createDefaultDondon(saved);
                         return saved;
-
                     } catch (DataIntegrityViolationException e) {
                         return myInfoRepository.findByUserId(user.getId())
-                                .orElseThrow(() -> e);
+                                .orElseThrow(() -> new IllegalStateException("MyInfo 생성 충돌 및 재조회 실패", e));
                     }
                 });
     }
