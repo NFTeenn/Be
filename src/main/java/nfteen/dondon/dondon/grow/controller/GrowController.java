@@ -3,6 +3,7 @@ package nfteen.dondon.dondon.grow.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
+import nfteen.dondon.dondon.auth.repository.UserRepository;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import nfteen.dondon.dondon.grow.dto.*;
 import nfteen.dondon.dondon.grow.entity.*;
@@ -24,30 +25,40 @@ public class GrowController {
     private final ShopService shopService;
     private final GoogleTokenVerifier googleTokenVerifier;
     private final MyInfoRepository myInfoRepository;
+    private final UserRepository userRepository;
 
     private GoogleUser getUserFromToken(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("토큰이 없습니다.");
+            throw new IllegalArgumentException("토큰 없음");
         }
 
         String idToken = auth.substring(7);
-        GoogleUser user = googleTokenVerifier.verify(idToken);
-        if (user == null) {
+        GoogleUser tokenUser = googleTokenVerifier.verify(idToken);
+
+        if (tokenUser == null) {
             throw new IllegalArgumentException("토큰 검증 실패");
         }
-        return user;
+
+        return userRepository.findByEmail(tokenUser.getEmail())
+                .orElseThrow(() -> new IllegalStateException("DB 유저 없음"));
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public MyPageResponse getMyPageInfo(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
+        if (user == null) {
+            return null;
+        }
         return growService.getMyPageInfo(user);
     }
 
     @GetMapping("/adult")
     public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
+        if (user == null) {
+            return List.of();
+        }
         return growService.getGraduatedDonDons(user.getId());
     }
 
@@ -77,32 +88,36 @@ public class GrowController {
             HttpServletRequest request,
             @RequestBody LikeRequest body) {
         GoogleUser user = getUserFromToken(request);
-        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getType());
+        boolean liked = likesService.saveLike(user.getId(), body.getTargetId(), body.getDescription());
 
         return ResponseEntity.ok(new LikeResponse(liked));
     }
 
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(
-            HttpServletRequest request,
-            @RequestParam(required = false) TypeName type,
-            @RequestParam(required = false) Long targetId) {
-        GoogleUser user = getUserFromToken(request);
-        List<LikesResponse> list = likesService.getLikes(user.getId(), type, targetId);
-        return ResponseEntity.ok(list);
+            HttpServletRequest request) {
+        {
+            GoogleUser user = getUserFromToken(request);
+            if (user == null) {
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(likesService.getLikes(user.getId()));
+
+        }
     }
 
     @GetMapping("/prizes")
     public ResponseEntity<List<PrizeResponse>> getPrizes(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
-        List<PrizeResponse> prizes = growService.getPrizes(user.getId());
-        return ResponseEntity.ok(prizes);
+        if (user == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(growService.getPrizes(user.getId()));
     }
 
     @GetMapping("/shop")
-    public ResponseEntity<List<LikesResponse.AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
-        GoogleUser user = getUserFromToken(request);
-        List<LikesResponse.AccessaryResponse> accessaries = shopService.getAllAccessaries();
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries() {
+        List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }
 

@@ -21,9 +21,7 @@ public class GrowService {
     private final MyInfoRepository myInfoRepository;
     private final DondonInfoRepository dondonInfoRepository;
     private final UserAccRepository userAccRepository;
-    private final LikesRepository likesRepository;
     private final UserPrizeRepository userPrizeRepository;
-    private final AccessaryRepository accessaryRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -31,25 +29,24 @@ public class GrowService {
         return myInfoRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
 
-                    MyInfo info = MyInfo.builder()
-                            .user(user)
-                            .username(user.getName())
-                            .email(user.getEmail())
-                            .days(1)
-                            .quizStack(0)
-                            .newsStack(0)
-                            .recentGen(1)
-                            .coin(0)
-                            .build();
+                    try{
+                        MyInfo info = MyInfo.builder()
+                                .user(user)
+                                .username(user.getName())
+                                .email(user.getEmail())
+                                .days(1)
+                                .quizStack(0)
+                                .newsStack(0)
+                                .recentGen(1)
+                                .coin(0)
+                                .build();
 
-                    try {
                         MyInfo saved = myInfoRepository.save(info);
                         createDefaultDondon(saved);
                         return saved;
-
                     } catch (DataIntegrityViolationException e) {
                         return myInfoRepository.findByUserId(user.getId())
-                                .orElseThrow(() -> e);
+                                .orElseThrow(() -> new IllegalStateException("MyInfo 생성 충돌 및 재조회 실패", e));
                     }
                 });
     }
@@ -67,13 +64,14 @@ public class GrowService {
                 .style(0)
                 .build();
 
-        userPrizeRepository.updateAchieved(info.getUser().getId(), "FIRST_DONDON");
-
         return dondonInfoRepository.save(dondon);
     }
 
     @Transactional
     public MyPageResponse getMyPageInfo(GoogleUser user) {
+        if (user == null || user.getId() == null) {
+            return  new MyPageResponse(null, null);
+        }
 
         MyInfo myInfo = myInfoRepository.findByUserId(user.getId())
                 .orElseGet(()-> createUserGrowInfo(user));
@@ -89,7 +87,11 @@ public class GrowService {
 
         DondonInfo latestDondon = dondonInfoRepository
                 .findTopByMyInfoOrderByGenDesc(myInfo)
-                .orElseThrow(()->new IllegalArgumentException("돈돈이가 존재하지 않음"));
+                .orElse(null);
+
+        if (latestDondon == null) {
+            return new MyPageResponse(myInfoResponse, null);
+        }
 
         UserAcc equippedAcc = userAccRepository
                 .findByMyInfoAndEquippedTrue(myInfo);
@@ -110,6 +112,11 @@ public class GrowService {
 
     @Transactional(readOnly = true)
     public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(Long userId) {
+
+        if (userId == null) {
+            return List.of();
+        }
+
         List<DondonInfo> list = dondonInfoRepository
                 .findByMyInfo_UserIdAndGraduationDateIsNotNull(userId);
 
@@ -128,6 +135,7 @@ public class GrowService {
 
     @Transactional
     public DondonInfo graduateAndAdopt(MyInfo info){
+
         DondonInfo current = dondonInfoRepository
                 .findTopByMyInfoOrderByGenDesc(info)
                 .orElseThrow(() -> new IllegalStateException("돈돈이 없음"));
@@ -155,6 +163,11 @@ public class GrowService {
 
     @Transactional
     public List<PrizeResponse> getPrizes(Long userId) {
+
+        if (userId == null) {
+            return List.of();
+        }
+
         List<UserPrize> userPrizes = userPrizeRepository.findByUserId(userId);
 
         return userPrizes.stream()

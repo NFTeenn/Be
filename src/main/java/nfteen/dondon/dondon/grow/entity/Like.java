@@ -23,6 +23,8 @@ public class Like {
 
     private Long targetId;
 
-    @Enumerated(EnumType.STRING)
-    private TypeName type;
+    private String word;
+
+    private String description;
+
 }

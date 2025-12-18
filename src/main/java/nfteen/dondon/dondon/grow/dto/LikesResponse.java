@@ -7,15 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LikesResponse {
     private Long targetId;
-    private String type;
+    private String word;
+    private String description;
     private boolean liked;
 
-    @Getter
-    @AllArgsConstructor
-    public static class AccessaryResponse {
-        private Long id;
-        private String name;
-        private String description;
-        private int price;
-    }
 }
