@@ -10,6 +10,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class GrowLevelEventListener {
@@ -19,14 +21,24 @@ public class GrowLevelEventListener {
     @EventListener
     @Transactional
     public void handleHomeLevelUp(HomeLevelUpEvent event) {
-        MyInfo myInfo = myInfoRepository.findByEmail(event.getEmail())
-                .orElseThrow();
+        Optional<MyInfo> myInfoOpt = myInfoRepository.findByEmail(event.getEmail());
+        if(myInfoOpt.isEmpty()){
+            return;
+        }
 
-        DondonInfo dondon = dondonInfoRepository
-                .findByMyInfo_UserIdAndGraduationDateIsNull(myInfo.getUserId())
-                .orElseThrow();
+        MyInfo myInfo = myInfoOpt.get();
+
+        Optional<DondonInfo> dondonOpt = dondonInfoRepository
+                .findByMyInfo_UserIdAndGraduationDateIsNull(myInfo.getUserId());
+
+        if(dondonOpt.isEmpty()){
+            return;
+        }
+
+        DondonInfo dondon = dondonOpt.get();
 
         dondon.setLevel(event.getLevel());
         myInfo.setCoin(myInfo.getCoin() + 1);
+        myInfo.setDays(event.getDay());
     }
 }

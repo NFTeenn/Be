@@ -37,7 +37,7 @@ public class HomeService {
         home.setLevel(home.getLevel() + 1);
 
         publisher.publishEvent(
-                new HomeLevelUpEvent(home.getEmail(), home.getLevel())
+                new HomeLevelUpEvent(home.getEmail(), home.getLevel(), home.getDay())
         );
     }
 
