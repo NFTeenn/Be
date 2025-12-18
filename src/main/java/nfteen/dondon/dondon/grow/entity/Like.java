@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nfteen.dondon.dondon.home.entity.Word;
 
 @Entity
 @Data
@@ -21,9 +22,11 @@ public class Like {
     @JoinColumn(name = "grow_id")
     private MyInfo myInfo;
 
-    private Long targetId;
+    private int targetId;
 
-    private String word;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "word_id")
+    private Word word;
 
     private String description;
 
