@@ -21,9 +21,7 @@ public class GrowService {
     private final MyInfoRepository myInfoRepository;
     private final DondonInfoRepository dondonInfoRepository;
     private final UserAccRepository userAccRepository;
-    private final LikesRepository likesRepository;
     private final UserPrizeRepository userPrizeRepository;
-    private final AccessaryRepository accessaryRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -74,6 +72,9 @@ public class GrowService {
 
     @Transactional
     public MyPageResponse getMyPageInfo(GoogleUser user) {
+        if (user == null || user.getId() == null) {
+            return  new MyPageResponse(null, null);
+        }
 
         MyInfo myInfo = myInfoRepository.findByUserId(user.getId())
                 .orElseGet(()-> createUserGrowInfo(user));
@@ -89,7 +90,11 @@ public class GrowService {
 
         DondonInfo latestDondon = dondonInfoRepository
                 .findTopByMyInfoOrderByGenDesc(myInfo)
-                .orElseThrow(()->new IllegalArgumentException("돈돈이가 존재하지 않음"));
+                .orElse(null);
+
+        if (latestDondon == null) {
+            return new MyPageResponse(myInfoResponse, null);
+        }
 
         UserAcc equippedAcc = userAccRepository
                 .findByMyInfoAndEquippedTrue(myInfo);
@@ -110,6 +115,11 @@ public class GrowService {
 
     @Transactional(readOnly = true)
     public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(Long userId) {
+
+        if (userId == null) {
+            return List.of();
+        }
+
         List<DondonInfo> list = dondonInfoRepository
                 .findByMyInfo_UserIdAndGraduationDateIsNotNull(userId);
 
@@ -128,6 +138,7 @@ public class GrowService {
 
     @Transactional
     public DondonInfo graduateAndAdopt(MyInfo info){
+
         DondonInfo current = dondonInfoRepository
                 .findTopByMyInfoOrderByGenDesc(info)
                 .orElseThrow(() -> new IllegalStateException("돈돈이 없음"));
@@ -155,6 +166,11 @@ public class GrowService {
 
     @Transactional
     public List<PrizeResponse> getPrizes(Long userId) {
+
+        if (userId == null) {
+            return List.of();
+        }
+
         List<UserPrize> userPrizes = userPrizeRepository.findByUserId(userId);
 
         return userPrizes.stream()

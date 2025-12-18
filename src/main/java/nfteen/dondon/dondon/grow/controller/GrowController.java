@@ -28,26 +28,28 @@ public class GrowController {
     private GoogleUser getUserFromToken(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("토큰이 없습니다.");
+            return null;
         }
 
         String idToken = auth.substring(7);
-        GoogleUser user = googleTokenVerifier.verify(idToken);
-        if (user == null) {
-            throw new IllegalArgumentException("토큰 검증 실패");
-        }
-        return user;
+        return googleTokenVerifier.verify(idToken);
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public MyPageResponse getMyPageInfo(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
+        if (user == null) {
+            return null;
+        }
         return growService.getMyPageInfo(user);
     }
 
     @GetMapping("/adult")
     public List<MyInfoResponse.AdultDondonResponse> getGraduatedDonDons(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
+        if (user == null) {
+            return List.of();
+        }
         return growService.getGraduatedDonDons(user.getId());
     }
 
@@ -85,21 +87,27 @@ public class GrowController {
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(
             HttpServletRequest request, @RequestParam String des) {
-        GoogleUser user = getUserFromToken(request);
-        List<LikesResponse> list = likesService.getLikes(user.getId(), des);
-        return ResponseEntity.ok(list);
+        {
+            GoogleUser user = getUserFromToken(request);
+            if (user == null) {
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(likesService.getLikes(user.getId(), des));
+
+        }
     }
 
     @GetMapping("/prizes")
     public ResponseEntity<List<PrizeResponse>> getPrizes(HttpServletRequest request) {
         GoogleUser user = getUserFromToken(request);
-        List<PrizeResponse> prizes = growService.getPrizes(user.getId());
-        return ResponseEntity.ok(prizes);
+        if (user == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(growService.getPrizes(user.getId()));
     }
 
     @GetMapping("/shop")
     public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
-        GoogleUser user = getUserFromToken(request);
         List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }

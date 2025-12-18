@@ -45,6 +45,10 @@ public class LikesService {
 
     public List<LikesResponse> getLikes(Long userId, String des) {
 
+        if (userId == null) {
+            return List.of();
+        }
+
         List<Like> list = likesRepository.findByMyInfo_UserIdAndDescription(userId, des);
 
         return list.stream()
