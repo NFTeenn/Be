@@ -23,6 +23,8 @@ public class Like {
 
     private Long targetId;
 
+    private String word;
+
     private String description;
 
 }

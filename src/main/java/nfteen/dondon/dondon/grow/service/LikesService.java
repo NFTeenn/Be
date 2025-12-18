@@ -43,17 +43,18 @@ public class LikesService {
         return true;
     }
 
-    public List<LikesResponse> getLikes(Long userId, String des) {
+    public List<LikesResponse> getLikes(Long userId) {
 
         if (userId == null) {
             return List.of();
         }
 
-        List<Like> list = likesRepository.findByMyInfo_UserIdAndDescription(userId, des);
+        List<Like> list = likesRepository.findByMyInfo_UserId(userId);
 
         return list.stream()
                 .map(l -> new LikesResponse(
                         l.getTargetId(),
+                        l.getWord(),
                         l.getDescription(),
                         true
                 ))

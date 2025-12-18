@@ -3,6 +3,7 @@ package nfteen.dondon.dondon.grow.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
+import nfteen.dondon.dondon.auth.repository.UserRepository;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
 import nfteen.dondon.dondon.grow.dto.*;
 import nfteen.dondon.dondon.grow.entity.*;
@@ -24,15 +25,23 @@ public class GrowController {
     private final ShopService shopService;
     private final GoogleTokenVerifier googleTokenVerifier;
     private final MyInfoRepository myInfoRepository;
+    private final UserRepository userRepository;
 
     private GoogleUser getUserFromToken(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            return null;
+            throw new IllegalArgumentException("토큰 없음");
         }
 
         String idToken = auth.substring(7);
-        return googleTokenVerifier.verify(idToken);
+        GoogleUser tokenUser = googleTokenVerifier.verify(idToken);
+
+        if (tokenUser == null) {
+            throw new IllegalArgumentException("토큰 검증 실패");
+        }
+
+        return userRepository.findByEmail(tokenUser.getEmail())
+                .orElseThrow(() -> new IllegalStateException("DB 유저 없음"));
     }
 
     @GetMapping("")
@@ -86,13 +95,13 @@ public class GrowController {
 
     @GetMapping("/likes")
     public ResponseEntity<List<LikesResponse>> getLikes(
-            HttpServletRequest request, @RequestParam String des) {
+            HttpServletRequest request) {
         {
             GoogleUser user = getUserFromToken(request);
             if (user == null) {
                 return ResponseEntity.ok(List.of());
             }
-            return ResponseEntity.ok(likesService.getLikes(user.getId(), des));
+            return ResponseEntity.ok(likesService.getLikes(user.getId()));
 
         }
     }
@@ -107,7 +116,7 @@ public class GrowController {
     }
 
     @GetMapping("/shop")
-    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries() {
         List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
         return ResponseEntity.ok(accessaries);
     }

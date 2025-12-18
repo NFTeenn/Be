@@ -7,5 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LikeRequest {
     private Long targetId;
+    private String word;
     private String description;
 }
