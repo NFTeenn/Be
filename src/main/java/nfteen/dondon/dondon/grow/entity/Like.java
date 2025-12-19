@@ -22,7 +22,7 @@ public class Like {
     @JoinColumn(name = "grow_id")
     private MyInfo myInfo;
 
-    private int targetId;
+    private int target_id;
 
     private String word;
 
