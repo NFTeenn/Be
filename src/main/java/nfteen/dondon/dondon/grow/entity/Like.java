@@ -26,6 +26,7 @@ public class Like {
 
     private String word;
 
+    @Column(length = 1000)
     private String description;
 
 }
