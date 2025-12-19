@@ -24,9 +24,9 @@ public class Like {
 
     private int targetId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Word word;
+    private String word;
 
+    @Column(length = 1000)
     private String description;
 
 }

@@ -25,14 +25,13 @@ public class LikesService {
     @Transactional
     public boolean saveLike(Long userId, int targetId) {
         Word word = wordRepository.findById(targetId)
-                .orElseThrow(() -> new IllegalArgumentException("단어 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("단어가 존재하지 않습니다."));
 
         String description = word.getDescription();
 
-        boolean exists =
-                likesRepository.existsByMyInfo_UserIdAndTargetIdAndDescription(
-                        userId, targetId, description
-                );
+        boolean exists = likesRepository.existsByMyInfo_UserIdAndTargetIdAndDescription(
+                userId, targetId, description
+        );
 
         if (exists) {
             likesRepository.deleteByMyInfo_UserIdAndTargetIdAndDescription(
@@ -42,18 +41,19 @@ public class LikesService {
         }
 
         MyInfo info = myInfoRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         Like like = Like.builder()
                 .myInfo(info)
                 .targetId(targetId)
-                .description(description)
-                .word(word)
+                .description(word.getDescription())
+                .word(word.getWord())
                 .build();
 
         likesRepository.save(like);
         return true;
     }
+
 
     public List<LikesResponse> getLikes(Long userId) {
 
@@ -66,7 +66,7 @@ public class LikesService {
         return list.stream()
                 .map(l -> new LikesResponse(
                         l.getTargetId(),
-                        l.getWord().getWord(),
+                        l.getWord(),
                         l.getDescription(),
                         true
                 ))
