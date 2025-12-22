@@ -10,4 +10,5 @@ public class AccessaryResponse {
     private String name;
     private String description;
     private int price;
+    private boolean owned;
 }

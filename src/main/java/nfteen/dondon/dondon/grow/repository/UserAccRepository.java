@@ -5,9 +5,12 @@ import nfteen.dondon.dondon.grow.entity.MyInfo;
 import nfteen.dondon.dondon.grow.entity.UserAcc;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface UserAccRepository extends JpaRepository<UserAcc, Long> {
 
     UserAcc findByMyInfoAndEquippedTrue(MyInfo myInfo);
     boolean existsByMyInfoAndAcc(MyInfo myInfo, Accessary acc);
+    List<UserAcc> findByMyInfo(MyInfo myInfo);
 
 }

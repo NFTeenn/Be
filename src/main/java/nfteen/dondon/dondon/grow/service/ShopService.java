@@ -22,10 +22,24 @@ public class ShopService {
     private final AccessaryRepository accessaryRepository;
     private final UserAccRepository userAccRepository;
 
-    public List<AccessaryResponse> getAllAccessaries(){
+    public List<AccessaryResponse> getAllAccessaries(Long userId){
+        MyInfo info = myInfoRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
+
         List<Accessary> accessaries = accessaryRepository.findAll();
+
+        List<Long> ownedAccIds =
+                userAccRepository.findByMyInfo(info).stream()
+                        .map(ua -> ua.getAcc().getId())
+                        .toList();
+
         return accessaries.stream()
-                .map(acc -> new AccessaryResponse(acc.getId(), acc.getName(), acc.getDescription(), acc.getPrice()))
+                .map(acc -> new AccessaryResponse(
+                        acc.getId(),
+                        acc.getName(),
+                        acc.getDescription(),
+                        acc.getPrice(),
+                        ownedAccIds.contains(acc.getId())))
                 .collect(Collectors.toList());
     }
 
