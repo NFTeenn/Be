@@ -259,12 +259,12 @@ public class HomeService {
         );
     }
 
-    public int showNews(BasicRequest request) {
-        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+    public int showNews(String email) {
+        Home home = homeRepository.findById(email).orElse(null);
         updateDailyStatus(home);
 
         publisher.publishEvent(
-                new NewsViewedEvent(request.getEmail())
+                new NewsViewedEvent(email)
         );
 
         List<String> mission = new ArrayList<>();
