@@ -1,5 +1,6 @@
 package nfteen.dondon.dondon.grow.repository;
 
+import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.grow.entity.Prize;
 import nfteen.dondon.dondon.grow.entity.UserPrize;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,7 @@ public interface UserPrizeRepository extends JpaRepository<UserPrize, Long> {
 
     @Modifying
     @Query("UPDATE UserPrize u SET u.achieved = true WHERE u.user.id = :userId AND u.prize.code = :code")
-    int updateAchieved(Long userId, String code);}
+    int updateAchieved(Long userId, String code);
+
+    boolean existsByUserAndPrize(GoogleUser user, Prize prize);
+}

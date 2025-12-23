@@ -2,6 +2,8 @@ package nfteen.dondon.dondon.home.service;
 
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.grow.event.HomeLevelUpEvent;
+import nfteen.dondon.dondon.grow.event.NewsViewedEvent;
+import nfteen.dondon.dondon.grow.event.QuizSolvedEvent;
 import nfteen.dondon.dondon.home.dto.*;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
@@ -78,6 +80,10 @@ public class HomeService {
 
             if (request.isSolve()) {
                 home.setQuizCount(home.getQuizCount() + 1);
+
+                publisher.publishEvent(
+                        new QuizSolvedEvent(home.getEmail())
+                );
             }
 
             home.setMission(mission.toString());
@@ -256,6 +262,11 @@ public class HomeService {
     public int showNews(BasicRequest request) {
         Home home = homeRepository.findById(request.getEmail()).orElse(null);
         updateDailyStatus(home);
+
+        publisher.publishEvent(
+                new NewsViewedEvent(request.getEmail())
+        );
+
         List<String> mission = new ArrayList<>();
         if (home.getMission() == null || home.getMission().isEmpty()) {
             for (int i = 0; i < 4; i++) mission.add("0");

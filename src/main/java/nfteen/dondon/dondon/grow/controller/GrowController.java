@@ -118,8 +118,10 @@ public class GrowController {
     }
 
     @GetMapping("/shop")
-    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries() {
-        List<AccessaryResponse> accessaries = shopService.getAllAccessaries();
+    public ResponseEntity<List<AccessaryResponse>> getAllAccessaries(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
+
+        List<AccessaryResponse> accessaries = shopService.getAllAccessaries(user.getId());
         return ResponseEntity.ok(accessaries);
     }
 

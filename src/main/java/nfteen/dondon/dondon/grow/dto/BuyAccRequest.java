@@ -7,6 +7,5 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class BuyAccRequest {
-    private Long userId;
     private Long accId;
 }
