@@ -2,6 +2,7 @@ package nfteen.dondon.dondon.home.service;
 
 import lombok.RequiredArgsConstructor;
 import nfteen.dondon.dondon.grow.event.HomeLevelUpEvent;
+import nfteen.dondon.dondon.grow.event.QuizSolvedEvent;
 import nfteen.dondon.dondon.home.dto.*;
 import nfteen.dondon.dondon.home.entity.Home;
 import nfteen.dondon.dondon.home.entity.Quiz;
@@ -78,6 +79,10 @@ public class HomeService {
 
             if (request.isSolve()) {
                 home.setQuizCount(home.getQuizCount() + 1);
+
+                publisher.publishEvent(
+                        new QuizSolvedEvent(home.getEmail())
+                );
             }
 
             home.setMission(mission.toString());

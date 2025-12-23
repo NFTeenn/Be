@@ -180,7 +180,13 @@ public class GrowService {
                 .toList();
     }
 
+    @Transactional
+    public void increaseQuizStack(String email) {
+        MyInfo myInfo = myInfoRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Grow 없음"));
 
+        myInfo.setQuizStack(myInfo.getQuizStack() + 1);
+    }
 
 
 }
