@@ -260,7 +260,6 @@ public class HomeService {
         );
     }
 
-    @Transactional
     public int showNews(String email) {
         int check = 0;
         Home home = homeRepository.findById(email).orElse(null);
