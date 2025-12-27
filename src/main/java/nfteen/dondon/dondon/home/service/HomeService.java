@@ -14,6 +14,7 @@ import nfteen.dondon.dondon.home.repository.WordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -259,13 +260,10 @@ public class HomeService {
         );
     }
 
-    public int showNews(BasicRequest request) {
-        Home home = homeRepository.findById(request.getEmail()).orElse(null);
+    public int showNews(String email) {
+        int check = 0;
+        Home home = homeRepository.findById(email).orElse(null);
         updateDailyStatus(home);
-
-        publisher.publishEvent(
-                new NewsViewedEvent(request.getEmail())
-        );
 
         List<String> mission = new ArrayList<>();
         if (home.getMission() == null || home.getMission().isEmpty()) {
@@ -282,10 +280,16 @@ public class HomeService {
         if ("0".equals(mission.get(3))) {
             mission.set(3, "1");
             levelUp(home);
+            check = 1;
         }
         home.setMission(mission.toString());
         homeRepository.save(home);
-        return 1;
+
+        publisher.publishEvent(
+                new NewsViewedEvent(email)
+        );
+
+        return check;
     }
 
 }

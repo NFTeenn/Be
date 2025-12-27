@@ -3,7 +3,6 @@ package nfteen.dondon.dondon.home.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import nfteen.dondon.dondon.auth.entity.GoogleUser;
 import nfteen.dondon.dondon.auth.service.GoogleTokenVerifier;
-import nfteen.dondon.dondon.home.dto.BasicRequest;
 import nfteen.dondon.dondon.home.dto.HomeRequest;
 import nfteen.dondon.dondon.home.dto.SearchWordRequest;
 import nfteen.dondon.dondon.home.dto.WordOneRequest;
@@ -102,7 +101,7 @@ public class HomeController {
     }
 
     @PostMapping("/news")
-    public Object showNews(HttpServletRequest request, @RequestBody BasicRequest body) {
+    public Object showNews(HttpServletRequest request) {
         try {
             String auth = request.getHeader("Authorization");
             if (auth == null || !auth.startsWith("Bearer ")) {
@@ -113,9 +112,7 @@ public class HomeController {
             if(user == null) {
                 return "토큰 검증 실패";
             }
-
-            body.setEmail(user.getEmail());
-            return homeService.showNews(body);
+            return homeService.showNews(user.getEmail());
         } catch (Exception e) {
             e.printStackTrace();
             return "오류 발생";
