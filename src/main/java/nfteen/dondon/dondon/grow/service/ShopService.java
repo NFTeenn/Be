@@ -27,20 +27,25 @@ public class ShopService {
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
 
         List<Accessary> accessaries = accessaryRepository.findAll();
-
-        List<Long> ownedAccIds =
-                userAccRepository.findByMyInfo(info).stream()
-                        .map(ua -> ua.getAcc().getId())
-                        .toList();
+        List<UserAcc> userAccs = userAccRepository.findByMyInfo(info);
 
         return accessaries.stream()
-                .map(acc -> new AccessaryResponse(
-                        acc.getId(),
-                        acc.getName(),
-                        acc.getDescription(),
-                        acc.getPrice(),
-                        ownedAccIds.contains(acc.getId())))
-                .collect(Collectors.toList());
+                .map(acc -> {
+                    UserAcc ua = userAccs.stream()
+                            .filter(u -> u.getAcc().getId().equals(acc.getId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    return new AccessaryResponse(
+                            acc.getId(),
+                            acc.getName(),
+                            acc.getDescription(),
+                            acc.getPrice(),
+                            ua != null,                   // owned
+                            ua != null && ua.isEquipped() // equipped
+                    );
+                })
+                .toList();
     }
 
     @Transactional
@@ -55,23 +60,50 @@ public class ShopService {
             return new BuyAccResponse(false, "코인이 부족합니다.");
         }
 
-        boolean alreadyOwned = userAccRepository.existsByMyInfoAndAcc(info, acc);
-        if(alreadyOwned) {
+        if(userAccRepository.existsByMyInfoAndAcc(info, acc)) {
             return new BuyAccResponse(false, "이미 소유한 악세서리입니다.");
         }
 
         info.setCoin(info.getCoin() - acc.getPrice());
-        myInfoRepository.save(info);
 
-        UserAcc userAcc = UserAcc.builder()
+        userAccRepository.save(UserAcc.builder()
                 .myInfo(info)
                 .acc(acc)
-                .equipped(true)
-                .build();
-        userAccRepository.save(userAcc);
+                .equipped(false)
+                .build()
+        );
+
 
         return new BuyAccResponse(true, "구매 완료");
     }
 
+    @Transactional
+    public void equipAcc(Long userId, Long accId) {
+        MyInfo info = myInfoRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
+
+        List<UserAcc> userAccs = userAccRepository.findByMyInfo(info);
+
+        userAccs.stream()
+                .filter(UserAcc::isEquipped)
+                .forEach(ua -> ua.setEquipped(false));
+
+        UserAcc target = userAccs.stream()
+                .filter(ua -> ua.getAcc().getId().equals(accId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("소유하지 않은 악세서리입니다."));
+
+        target.setEquipped(true);
+    }
+
+    @Transactional
+    public void unequipAcc(Long userId) {
+        MyInfo info = myInfoRepository.findByUserId(userId)
+                .orElseThrow(()-> new IllegalArgumentException("유저 정보 없음"));
+
+        userAccRepository.findByMyInfo(info).stream()
+                .filter(UserAcc::isEquipped)
+                .forEach(ua -> ua.setEquipped(false));
+    }
 
 }
