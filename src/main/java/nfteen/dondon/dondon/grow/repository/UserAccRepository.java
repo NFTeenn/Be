@@ -12,5 +12,6 @@ public interface UserAccRepository extends JpaRepository<UserAcc, Long> {
     UserAcc findByMyInfoAndEquippedTrue(MyInfo myInfo);
     boolean existsByMyInfoAndAcc(MyInfo myInfo, Accessary acc);
     List<UserAcc> findByMyInfo(MyInfo myInfo);
+    List<UserAcc> findByMyInfoAndEquippedTrueIsTrue(MyInfo myInfo);
 
 }

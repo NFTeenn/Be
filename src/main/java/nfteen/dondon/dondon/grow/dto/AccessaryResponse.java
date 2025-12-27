@@ -11,4 +11,5 @@ public class AccessaryResponse {
     private String description;
     private int price;
     private boolean owned;
+    private boolean equipped;
 }

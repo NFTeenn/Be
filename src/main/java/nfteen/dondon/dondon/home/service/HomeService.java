@@ -36,6 +36,7 @@ public class HomeService {
 
     private final ApplicationEventPublisher publisher;
 
+    @Transactional
     public void levelUp(Home home) {
         home.setLevel(home.getLevel() + 1);
 

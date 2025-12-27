@@ -133,4 +133,20 @@ public class GrowController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/shop/equip")
+    public ResponseEntity<Void> equip(HttpServletRequest request, @RequestBody EquipAccRequest body) {
+        GoogleUser user = getUserFromToken(request);
+        shopService.equipAcc(user.getId(), body.getAccId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/shop/unequip")
+    public ResponseEntity<Void> unequip(HttpServletRequest request) {
+        GoogleUser user = getUserFromToken(request);
+        shopService.unequipAcc(user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+
+
 }

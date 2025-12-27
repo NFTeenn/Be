@@ -18,9 +18,11 @@ import nfteen.dondon.dondon.grow.entity.Prize;
 import nfteen.dondon.dondon.grow.entity.UserPrize;
 import nfteen.dondon.dondon.grow.repository.PrizeRepository;
 import nfteen.dondon.dondon.grow.repository.UserPrizeRepository;
+import nfteen.dondon.dondon.grow.service.AchievementService;
 import nfteen.dondon.dondon.grow.service.GrowService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
@@ -32,8 +34,7 @@ import java.util.Optional;
 public class GoogleTokenVerifier {
 
     private final GrowService growService;
-    private final PrizeRepository prizeRepository;
-    private final UserPrizeRepository userPrizeRepository;
+    private final AchievementService achievementService;
     @Value("${google.jwk.url}")
     private String googleJwkUrl;
 
@@ -57,55 +58,29 @@ public class GoogleTokenVerifier {
             String email = jwt.getJWTClaimsSet().getStringClaim("email");
             String name = jwt.getJWTClaimsSet().getStringClaim("name");
 
-            Optional<GoogleUser> optionalUser = userRepository.findByEmail(email);
-
-            boolean isNewUser = optionalUser.isEmpty();
-
-            GoogleUser user;
-            if(isNewUser) {
-                user = GoogleUser.builder()
-                        .google_id(googleId)
-                        .email(email)
-                        .name(name)
-                        .role(Role.USER)
-                        .build();
-            } else {
-                user = optionalUser.get();
-                user.setName(name);
-                user.setGoogle_id(googleId);
-            }
-
+            GoogleUser user = userRepository.findByEmail(email)
+                    .map(existing -> {
+                        existing.setGoogle_id(googleId);
+                        existing.setName(name);
+                        return existing;
+                    })
+                    .orElseGet(() -> GoogleUser.builder()
+                            .google_id(googleId)
+                            .email(email)
+                            .name(name)
+                            .role(Role.USER)
+                            .build()
+                    );
 
             user = userRepository.save(user);
 
             growService.createUserGrowInfo(user);
+            achievementService.achieve(user, "FIRST_DONDON");
 
-            Prize prize = prizeRepository.findByCode("FIRST_DONDON")
-                    .orElseThrow(() -> new IllegalArgumentException("FIRST_DONDON prize 존재하지 않음"));
-
-            boolean alreadyHas =
-                userPrizeRepository.existsByUserAndPrize(user, prize);
-
-            if (!alreadyHas) {
-                UserPrize userPrize = UserPrize.builder()
-                    .user(user)
-                     .prize(prize)
-                    .achieved(true)
-                    .build();
-
-                userPrizeRepository.save(userPrize);
-            }
             return user;
-
         } catch (BadJOSEException e) {
-            if (e.getMessage() != null && e.getMessage().contains("Expired JWT")) {
-                System.out.println("[GoogleTokenVerifier] 토큰 만료됨");
-            } else {
-                System.out.println("[GoogleTokenVerifier] JWT 검증 실패: " + e.getMessage());
-            }
             return null;
         } catch (JOSEException | ParseException e) {
-            System.out.println("[GoogleTokenVerifier] 토큰 파싱/검증 오류: " + e.getMessage());
             return null;
         } catch (Exception e) {
             e.printStackTrace();

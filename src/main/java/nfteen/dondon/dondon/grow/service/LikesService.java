@@ -54,7 +54,7 @@ public class LikesService {
         return true;
     }
 
-
+    @Transactional(readOnly = true)
     public List<LikesResponse> getLikes(Long userId) {
 
         if (userId == null) {

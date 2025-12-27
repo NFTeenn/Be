@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -22,6 +24,7 @@ public class GrowService {
     private final DondonInfoRepository dondonInfoRepository;
     private final UserAccRepository userAccRepository;
     private final UserPrizeRepository userPrizeRepository;
+    private final PrizeRepository prizeRepository;
 
     @Transactional
     public MyInfo createUserGrowInfo(GoogleUser user) {
@@ -161,22 +164,32 @@ public class GrowService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PrizeResponse> getPrizes(Long userId) {
 
         if (userId == null) {
             return List.of();
         }
 
-        List<UserPrize> userPrizes = userPrizeRepository.findByUserId(userId);
+        List<Prize> prizes = prizeRepository.findAll();
 
-        return userPrizes.stream()
-                .map(up -> new PrizeResponse(
-                        up.getPrize().getCode(),
-                        up.getPrize().getTitle(),
-                        up.getPrize().getDescription(),
-                        up.isAchieved()
-                ))
+        Map<Long, UserPrize> userPrizeMap =
+                userPrizeRepository.findByUser_Id(userId).stream()
+                        .collect(Collectors.toMap(
+                                up -> up.getPrize().getId(),
+                                up -> up
+                        ));
+
+        return prizes.stream()
+                .map(prize -> {
+                    UserPrize up = userPrizeMap.get(prize.getId());
+                    return new PrizeResponse(
+                            prize.getCode(),
+                            prize.getTitle(),
+                            prize.getDescription(),
+                            up != null && up.isAchieved()
+                    );
+                })
                 .toList();
     }
 
@@ -193,7 +206,7 @@ public class GrowService {
         MyInfo myInfo = myInfoRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Grow 없음"));
 
-        myInfo.setQuizStack(myInfo.getNewsStack() + 1);    }
+        myInfo.setNewsStack(myInfo.getNewsStack() + 1);    }
 
 
 }

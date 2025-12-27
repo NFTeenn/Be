@@ -12,7 +12,13 @@ import nfteen.dondon.dondon.auth.entity.GoogleUser;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "user_prize")
+@Table(
+        name = "user_prize",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "prize_id"})
+        }
+)
+
 public class UserPrize {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
