@@ -22,6 +22,8 @@ public class ShopService {
     private final AccessaryRepository accessaryRepository;
     private final UserAccRepository userAccRepository;
 
+
+    @Transactional(readOnly = true)
     public List<AccessaryResponse> getAllAccessaries(Long userId){
         MyInfo info = myInfoRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저 정보 없음"));
