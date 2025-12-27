@@ -18,6 +18,7 @@ import nfteen.dondon.dondon.grow.entity.Prize;
 import nfteen.dondon.dondon.grow.entity.UserPrize;
 import nfteen.dondon.dondon.grow.repository.PrizeRepository;
 import nfteen.dondon.dondon.grow.repository.UserPrizeRepository;
+import nfteen.dondon.dondon.grow.service.AchievementService;
 import nfteen.dondon.dondon.grow.service.GrowService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,8 +34,7 @@ import java.util.Optional;
 public class GoogleTokenVerifier {
 
     private final GrowService growService;
-    private final PrizeRepository prizeRepository;
-    private final UserPrizeRepository userPrizeRepository;
+    private final AchievementService achievementService;
     @Value("${google.jwk.url}")
     private String googleJwkUrl;
 
@@ -75,24 +75,9 @@ public class GoogleTokenVerifier {
             user = userRepository.save(user);
 
             growService.createUserGrowInfo(user);
-            Prize prize = prizeRepository.findByCode("FIRST_DONDON")
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("FIRST_DONDON prize 없음"));
-
-            try {
-                userPrizeRepository.save(
-                        UserPrize.builder()
-                                .user(user)
-                                .prize(prize)
-                                .achieved(true)
-                                .build()
-                );
-            } catch (DataIntegrityViolationException e) {
-
-            }
+            achievementService.achieve(user, "FIRST_DONDON");
 
             return user;
-
         } catch (BadJOSEException e) {
             return null;
         } catch (JOSEException | ParseException e) {
