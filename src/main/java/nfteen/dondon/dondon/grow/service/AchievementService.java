@@ -22,6 +22,9 @@ public class AchievementService {
         Prize prize = prizeRepository.findByCode(prizeCode)
                 .orElseThrow(()->new IllegalArgumentException("Prize 없음"));
 
+        boolean alreadyAchieved = userPrizeRepository.existsByUserAndPrize(user, prize);
+        if(alreadyAchieved) return;
+
         try {
             userPrizeRepository.save(
                     UserPrize.builder()
