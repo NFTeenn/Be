@@ -24,6 +24,8 @@ import java.util.*;
 @RequiredArgsConstructor
 @Service
 public class HomeService {
+    private LocalDate day = null;
+    private List<WordResponse> fixedWords;
 
     @Autowired
     private HomeRepository homeRepository;
@@ -167,7 +169,6 @@ public class HomeService {
     }
 
     public List<WordResponse> showWords(String email) {
-
         Home home = homeRepository.findById(email)
                 .orElseGet(() -> {
                     Home newHome = Home.builder()
@@ -177,24 +178,29 @@ public class HomeService {
                     return homeRepository.save(newHome);
                 });
 
-        if (home == null) {
-            throw new IllegalStateException("Home 생성 실패 : email =" + email);
-        }
-
         updateDailyStatus(home);
 
-        List<Word> allWords = wordRepository.findAll();
-        Collections.shuffle(allWords);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
-        return allWords.stream()
-                .limit(4)
-                .map(word -> new WordResponse(
-                        word.getNum(),
-                        word.getWord(),
-                        word.getDescription(),
-                        word.getSubject()
-                ))
-                .toList();
+        if (day == null || !day.equals(today)) {
+
+            List<Word> allWords = wordRepository.findAll();
+            Collections.shuffle(allWords);
+
+            fixedWords = allWords.stream()
+                    .limit(4)
+                    .map(word -> new WordResponse(
+                            word.getNum(),
+                            word.getWord(),
+                            word.getDescription(),
+                            word.getSubject()
+                    ))
+                    .toList();
+
+            day = today;
+        }
+
+        return fixedWords;
     }
 
     public List<WordResponse> searchWords(SearchWordRequest request) {
